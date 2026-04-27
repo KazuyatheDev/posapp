@@ -80,7 +80,7 @@
     .btn-danger:hover { background: #fee2e2; }
 
     /* ── App Shell ── */
-    #app { display: none; height: 100vh; padding-top: var(--statusbar); }
+    #app { height: 100vh; padding-top: var(--statusbar); }
 
     /* ── Sidebar ── */
     #sidebar {
@@ -261,25 +261,7 @@
   <button onclick="syncQueue()">Sync Now</button>
 </div>
 
-<!-- Login -->
-<div id="login">
-  <div class="login-card">
-    <div class="login-logo">CarePOS</div>
-    <div class="login-sub">Carenderia Point of Sale System</div>
-    <form onsubmit="doLogin(event)">
-      <div class="fgrp">
-        <label class="flbl">Email</label>
-        <input id="l-email" type="email" class="finp" placeholder="you@example.com" required>
-      </div>
-      <div class="fgrp">
-        <label class="flbl">Password</label>
-        <input id="l-pass" type="password" class="finp" placeholder="••••••••" required>
-      </div>
-      <button type="submit" id="l-btn" class="btn btn-black btn-full" style="margin-top:6px;">Sign In</button>
-      <div id="l-err" class="login-err"></div>
-    </form>
-  </div>
-</div>
+<!-- Login removed — direct access enabled -->
 
 <!-- App -->
 <div id="app">
@@ -295,7 +277,7 @@
       <button class="navbtn" data-sec="settings" onclick="nav('settings')"><span class="navico">⚙️</span> Settings</button>
     </nav>
     <div class="s-bottom">
-      <button class="navbtn" onclick="doLogout()" style="color:#ef4444;"><span class="navico">🚪</span> Logout</button>
+      <!-- Logout hidden (no auth) -->
     </div>
   </div>
 
@@ -563,35 +545,7 @@ const CAT_EMO = {
 };
 const emo = item => CAT_EMO[item.category] || CAT_EMO.default;
 
-// ══════════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════════
-async function doLogin(e) {
-  e.preventDefault();
-  const btn = document.getElementById('l-btn');
-  const err = document.getElementById('l-err');
-  btn.textContent = 'Signing in…'; btn.disabled = true; err.style.display = 'none';
-  const { error } = await sb.auth.signInWithPassword({
-    email: document.getElementById('l-email').value,
-    password: document.getElementById('l-pass').value
-  });
-  if (error) {
-    err.textContent = error.message; err.style.display = 'block';
-    btn.textContent = 'Sign In'; btn.disabled = false; return;
-  }
-  bootApp();
-}
-
-async function doLogout() {
-  await sb.auth.signOut();
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login').style.display = 'flex';
-}
-
-async function checkSession() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) bootApp(); else document.getElementById('login').style.display = 'flex';
-}
+// Auth removed — direct access
 
 // ══════════════════════════════════════════════
 // BOOT
@@ -1124,7 +1078,7 @@ function chartOpts(yfmt) {
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
-checkSession();
+bootApp();
 </script>
 </body>
 </html>
