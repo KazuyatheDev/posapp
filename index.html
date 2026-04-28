@@ -494,13 +494,6 @@ tbody tr.rh:hover{background:var(--sf);}
     <div class="ph"><h1 class="pt">Settings</h1></div>
     <div class="ss">
       <div class="scard">
-        <div class="sch"><div class="sct">Store Information</div><div class="scs">Shown on receipts</div></div>
-        <div class="srow"><div class="sri"><div class="srl">Store Name</div><div class="srd">Displayed on receipt headers</div></div><div class="src"><input id="sn" type="text" class="sinp" placeholder="My Store"></div></div>
-        <div class="srow"><div class="sri"><div class="srl">Address</div><div class="srd">Store address</div></div><div class="src"><input id="sa" type="text" class="sinp" placeholder="123 Rizal St."></div></div>
-        <div class="srow"><div class="sri"><div class="srl">Contact Number</div><div class="srd">Phone number</div></div><div class="src"><input id="sp" type="text" class="sinp" placeholder="+63 9XX XXX XXXX"></div></div>
-        <div class="sft"><button class="btn btn-k btn-s" onclick="saveSt()">Save Changes</button></div>
-      </div>
-      <div class="scard">
         <div class="sch"><div class="sct">Receipt &amp; Tax</div><div class="scs">Tax configuration and receipt preferences</div></div>
         <div class="srow"><div class="sri"><div class="srl">Enable Tax</div><div class="srd">Apply tax to all transactions</div></div><div class="src"><label class="tgl"><input id="sv" type="checkbox" checked onchange="togVR()"><span class="tgs"></span></label></div></div>
         <div class="srow" id="vr-row"><div class="sri"><div class="srl">Tax Rate (%)</div><div class="srd">Percentage applied to subtotal</div></div><div class="src"><input id="svr" type="number" class="sinp" value="12" min="0" max="100" style="width:90px;"></div></div>
@@ -633,6 +626,7 @@ tbody tr.rh:hover{background:var(--sf);}
 
 <script>
 const CFG={URL:'https://vsldzhmfdvqvshtlbfpc.supabase.co',KEY:'sb_publishable_xdTGlsl0DEmx75l_8EqjPA_d_gXtHbq',VAT:.12};
+const STORE={name:"HUNTER'S FOODHOUSE",address:'Arezzo Place Condominium Pasig, Philippines',phone:'+63 915 686 7134'};
 const sb=supabase.createClient(CFG.URL,CFG.KEY);
 const S={
   cart:JSON.parse(localStorage.getItem('cp_cart')||'[]').map(i=>({...i,cartId:i.cartId||i.id})),
@@ -1107,17 +1101,16 @@ async function viewRcp(id){
   const{data,error}=await sb.from('invoices').select('*,invoice_items(*)').eq('id',id).single();
   if(error||!data){toast('Could not load receipt');return;}
   S.rcpData=data;
-  const sn=S.cfg.storeName||'PoS 4 All';
-  document.getElementById('rcp').innerHTML=`<div class="rh2"><div class="rl">${sn}</div>${S.cfg.address?`<div style="font-size:12px;color:var(--mu);">${S.cfg.address}</div>`:''}<div style="font-size:12px;color:var(--mu);margin-top:3px;">${fmtD(data.created_at)} · ${fmtT(data.created_at)}</div><div style="font-size:13px;font-weight:700;margin-top:4px;">${data.invoice_number}</div></div>${(data.invoice_items||[]).map(it=>`<div class="rrow"><span>${it.item_name} &times; ${it.quantity}</span><span>${fmt(it.line_total)}</span></div>`).join('')}<hr class="rdiv"><div class="rrow"><span style="color:var(--mu);">Subtotal</span><span>${fmt(data.subtotal)}</span></div><div class="rrow"><span style="color:var(--mu);">VAT (${Math.round(CFG.VAT*100)}%)</span><span>${fmt(data.vat_amount)}</span></div><hr class="rdiv"><div class="rrow bold"><span>TOTAL</span><span>${fmt(data.total_amount)}</span></div><div style="margin-top:9px;font-size:13px;color:var(--mu);">Payment: ${data.payment_method==='gcash'?'GCash':'Cash'}</div>`;
+  document.getElementById('rcp').innerHTML=`<div class="rh2"><div class="rl">${STORE.name}</div><div style="font-size:12px;color:var(--mu);">${STORE.address}</div><div style="font-size:12px;color:var(--mu);">${STORE.phone}</div><div style="font-size:12px;color:var(--mu);margin-top:3px;">${fmtD(data.created_at)} · ${fmtT(data.created_at)}</div><div style="font-size:13px;font-weight:700;margin-top:4px;">${data.invoice_number}</div></div>${(data.invoice_items||[]).map(it=>`<div class="rrow"><span>${it.item_name} &times; ${it.quantity}</span><span>${fmt(it.line_total)}</span></div>`).join('')}<hr class="rdiv"><div class="rrow"><span style="color:var(--mu);">Subtotal</span><span>${fmt(data.subtotal)}</span></div><div class="rrow"><span style="color:var(--mu);">VAT (${Math.round(CFG.VAT*100)}%)</span><span>${fmt(data.vat_amount)}</span></div><hr class="rdiv"><div class="rrow bold"><span>TOTAL</span><span>${fmt(data.total_amount)}</span></div><div style="margin-top:9px;font-size:13px;color:var(--mu);">Payment: ${data.payment_method==='gcash'?'GCash':'Cash'}</div>`;
   document.getElementById('rmod').classList.add('open');
 }
 function closeRcp(){document.getElementById('rmod').classList.remove('open');S.rcpData=null;}
 
 function printRcp(){
   if(!S.rcpData)return;
-  const d=S.rcpData,sn=S.cfg.storeName||'PoS 4 All';
+  const d=S.rcpData;
   const w=window.open('','_blank','width=420,height=640');
-  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:12px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:15px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:2px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:14px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center"><h2>${sn}</h2>${S.cfg.address?`<div>${S.cfg.address}</div>`:''}<div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row"><span>Subtotal</span><span>₱${parseFloat(d.subtotal).toFixed(2)}</span></div><div class="row"><span>VAT (${Math.round(CFG.VAT*100)}%)</span><span>₱${parseFloat(d.vat_amount).toFixed(2)}</span></div><div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div><div style="margin-top:8px;font-size:11px;">Payment: ${d.payment_method==='gcash'?'GCash':'Cash'}</div></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:12px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:15px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:2px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:14px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center"><h2>${STORE.name}</h2><div>${STORE.address}</div><div>${STORE.phone}</div><div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row"><span>Subtotal</span><span>₱${parseFloat(d.subtotal).toFixed(2)}</span></div><div class="row"><span>VAT (${Math.round(CFG.VAT*100)}%)</span><span>₱${parseFloat(d.vat_amount).toFixed(2)}</span></div><div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div><div style="margin-top:8px;font-size:11px;">Payment: ${d.payment_method==='gcash'?'GCash':'Cash'}</div></body></html>`);
   w.document.close();
   setTimeout(()=>w.print(),400);
 }
@@ -1126,11 +1119,12 @@ function downloadRcpPDF(){
   if(!S.rcpData){toast('No receipt loaded');return;}
   if(!window.jspdf){toast('PDF library not loaded');return;}
   const{jsPDF}=window.jspdf;
-  const d=S.rcpData,sn=S.cfg.storeName||'PoS 4 All';
+  const d=S.rcpData;
   const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
   const cx=105,lm=55,rm=155;let y=20;
-  doc.setFontSize(16);doc.setFont(undefined,'bold');doc.text(sn,cx,y,{align:'center'});y+=7;
-  if(S.cfg.address){doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(S.cfg.address,cx,y,{align:'center'});y+=5;}
+  doc.setFontSize(16);doc.setFont(undefined,'bold');doc.text(STORE.name,cx,y,{align:'center'});y+=7;
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(STORE.address,cx,y,{align:'center'});y+=5;
+  doc.text(STORE.phone,cx,y,{align:'center'});y+=5;
   doc.setFontSize(9);doc.text(`${fmtD(d.created_at)} · ${fmtT(d.created_at)}`,cx,y,{align:'center'});y+=5;
   doc.setFont(undefined,'bold');doc.text(d.invoice_number,cx,y,{align:'center'});y+=7;
   doc.setDrawColor(180);doc.line(lm,y,rm,y);y+=5;
@@ -1151,16 +1145,13 @@ function downloadRcpPDF(){
 function togVR(){document.getElementById('vr-row').style.display=document.getElementById('sv').checked?'flex':'none';}
 function loadSt(){
   const c=S.cfg;
-  document.getElementById('sn').value=c.storeName||'';
-  document.getElementById('sa').value=c.address||'';
-  document.getElementById('sp').value=c.phone||'';
   document.getElementById('sv').checked=c.vatOn!==false;
   document.getElementById('svr').value=c.vatRate||12;
   document.getElementById('ssv').checked=c.showReceipt!==false;
   togVR();
 }
 function saveSt(){
-  S.cfg={storeName:document.getElementById('sn').value.trim(),address:document.getElementById('sa').value.trim(),phone:document.getElementById('sp').value.trim(),vatOn:document.getElementById('sv').checked,vatRate:parseFloat(document.getElementById('svr').value)||12,showReceipt:document.getElementById('ssv').checked};
+  S.cfg={vatOn:document.getElementById('sv').checked,vatRate:parseFloat(document.getElementById('svr').value)||12,showReceipt:document.getElementById('ssv').checked};
   localStorage.setItem('cp_cfg',JSON.stringify(S.cfg));
   CFG.VAT=S.cfg.vatOn?(S.cfg.vatRate/100):0;
   toast('Settings saved');renderCart();
