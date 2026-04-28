@@ -410,6 +410,13 @@ tbody tr.rh:hover{background:var(--sf);}
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="ms" type="text" placeholder="Search menu…" oninput="fmenu()">
       </div>
+      <select id="msort" class="dsel" onchange="applyF()" style="font-size:12px;padding:7px 10px;">
+        <option value="">Sort: Default</option>
+        <option value="cat">Category A–Z</option>
+        <option value="pa">Price: Low → High</option>
+        <option value="pd">Price: High → Low</option>
+        <option value="name">Name A–Z</option>
+      </select>
     </div>
     <div class="cbar"><div id="pills" class="pills"></div></div>
     <div class="mscroll"><div id="mg"><div class="empty">Loading menu…</div></div></div>
@@ -477,7 +484,7 @@ tbody tr.rh:hover{background:var(--sf);}
 <div id="pg-products" class="pg">
   <div class="pg-std">
     <div class="ph"><h1 class="pt">Products</h1><button class="btn btn-k" onclick="openIM()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button></div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Inv. Qty</th><th>Types</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Inv. Qty</th><th>Sizes/Types</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
   </div>
 </div>
 
@@ -597,11 +604,11 @@ tbody tr.rh:hover{background:var(--sf);}
         </div>
       </div>
       <div class="frow">
-        <div class="fg"><label class="fl">Inv. Qty (optional)</label><input id="fq" type="number" class="fi" placeholder="Leave blank = N/A" min="0" step="1"></div>
+        <div class="fg"><label class="fl">Inventory Quantity</label><input id="fq" type="number" class="fi" placeholder="N/A" min="0" step="1"></div>
         <div class="fg" style="display:flex;flex-direction:column;"></div>
       </div>
       <div class="fg">
-        <label class="fl">Sizes / Types (optional — leave empty for N/A)</label>
+        <label class="fl">Sizes / Types</label>
         <div id="types-list"></div>
         <button type="button" class="btn btn-o btn-s" style="margin-top:6px;" onclick="addTypeRow()">+ Add Size / Type</button>
       </div>
@@ -654,9 +661,10 @@ function safeImgSrc(url){
   const t=url.trim();
   try{const u=new URL(t);return(u.protocol==='http:'||u.protocol==='https:')?t:null;}catch{return null;}
 }
+function imgFallback(el){el.parentNode.innerHTML='<div class="mci-ph">'+PH_SVG+'</div>';}
 function imgH(item){
   const src=safeImgSrc(item.image_url);
-  if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<div class=\\'mci-ph\\'>${PH_SVG}</div>'">`;}
+  if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="imgFallback(this)">`;}
   return`<div class="mci-ph">${PH_SVG}</div>`;
 }
 function thmH(item){
@@ -718,9 +726,14 @@ function catF(c,el){S.cat=c;document.querySelectorAll('.pill').forEach(p=>p.clas
 function fmenu(){applyF();}
 function applyF(){
   const q=document.getElementById('ms').value.toLowerCase();
+  const sort=document.getElementById('msort').value;
   let it=S.menu;
   if(S.cat!=='All')it=it.filter(i=>i.category===S.cat);
   if(q)it=it.filter(i=>i.name.toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q));
+  if(sort==='cat')it=[...it].sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.name.localeCompare(b.name));
+  else if(sort==='pa')it=[...it].sort((a,b)=>a.price-b.price);
+  else if(sort==='pd')it=[...it].sort((a,b)=>b.price-a.price);
+  else if(sort==='name')it=[...it].sort((a,b)=>a.name.localeCompare(b.name));
   renderMenu(it);
 }
 function renderMenu(items){
@@ -897,7 +910,7 @@ function renderInv(){
     else if(iq<=5)iqD=`<span style="color:#ea580c;font-weight:600;">${iq}</span>`;
     else iqD=`<span style="font-weight:600;">${iq}</span>`;
     const pt=item.product_types;
-    const ptD=pt&&pt.length?`<span class="bdg bb">${pt.length} type${pt.length>1?'s':''}</span>`:'<span style="color:var(--mu)">N/A</span>';
+    const ptD=pt&&pt.length?`<span class="bdg bb">${pt.map(t=>t.name[0].toUpperCase()).join(',')}</span>`:'<span style="color:var(--mu)">N/A</span>';
     return`<tr class="rh"><td style="font-weight:500;">${item.name}</td><td style="font-weight:600;">${fmt(item.price)}</td><td>${item.category?`<span class="bdg bcat">${item.category}</span>`:'<span style="color:var(--mu)">—</span>'}</td><td>${iqD}</td><td>${ptD}</td><td><div style="display:flex;align-items:center;gap:8px;"><label class="tgl"><input type="checkbox" ${item.is_available_in_cashier?'checked':''} onchange="togAvail('${item.id}',this.checked)"><span class="tgs"></span></label><span class="bdg ${item.is_available_in_cashier?'bg':'bgr'}">${item.is_available_in_cashier?'✓ Visible':'Hidden'}</span></div></td><td><div style="display:flex;gap:5px;"><button class="btn btn-o btn-s" onclick="openIM('${item.id}')">Edit</button><button class="btn btn-o btn-s btn-d" onclick="delItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Delete</button></div></td></tr>`;
   }).join('');
 }
