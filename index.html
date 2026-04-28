@@ -510,7 +510,7 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <div class="g2">
       <div class="card"><div class="card-t">Revenue by Day</div><div class="cw"><canvas id="rp-dc"></canvas></div></div>
-      <div class="card"><div class="card-t">Payment Methods</div><div class="cw"><canvas id="rp-pm"></canvas></div></div>
+      <div class="card"><div class="card-t">Order Status</div><div class="cw"><canvas id="rp-pm"></canvas></div></div>
     </div>
     <div class="g2">
       <div class="card"><div class="card-t">Top Selling Items</div><div class="cw"><canvas id="rp-ti"></canvas></div></div>
@@ -1195,11 +1195,12 @@ async function loadReports(){
   const dayVals=days.map(d=>dayMap[d]||0);
   if(S.charts.rpD)S.charts.rpD.destroy();
   S.charts.rpD=new Chart(document.getElementById('rp-dc'),{type:'bar',data:{labels:dayLabels,datasets:[{label:'Revenue',data:dayVals,backgroundColor:'rgba(17,24,39,.8)',borderRadius:4}]},options:cOpt(v=>`₱${v}`)});
-  // Payment methods
-  const pmCash=active.filter(i=>i.payment_method==='cash').reduce((s,i)=>s+parseFloat(i.total_amount),0);
-  const pmGcash=active.filter(i=>i.payment_method==='gcash').reduce((s,i)=>s+parseFloat(i.total_amount),0);
+  // Order status breakdown
+  const stPaid=list.filter(i=>i.payment_status==='completed').length;
+  const stRef=list.filter(i=>i.payment_status==='refunded').length;
+  const stVoid=list.filter(i=>i.payment_status==='void').length;
   if(S.charts.rpPM)S.charts.rpPM.destroy();
-  S.charts.rpPM=new Chart(document.getElementById('rp-pm'),{type:'doughnut',data:{labels:['Cash','GCash'],datasets:[{data:[pmCash,pmGcash],backgroundColor:['#374151','#9ca3af'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},boxWidth:12}}}}});
+  S.charts.rpPM=new Chart(document.getElementById('rp-pm'),{type:'doughnut',data:{labels:['Paid','Refunded','Void'],datasets:[{data:[stPaid,stRef,stVoid],backgroundColor:['#22c55e','#f97316','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},boxWidth:12}}}}});
   // Top selling items
   const itemMap={};
   active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{itemMap[it.item_name]=(itemMap[it.item_name]||0)+it.quantity;}));
