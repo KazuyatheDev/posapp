@@ -187,6 +187,26 @@ tbody tr.rh:hover{background:var(--sf);}
 .eye-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--bd);background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;padding:0;flex-shrink:0;}
 .eye-btn:hover{background:var(--sf);}
 .eye-btn svg{width:14px;height:14px;stroke:#6b7280;fill:none;stroke-width:2;}
+/* Status select */
+.status-sel{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;outline:none;font-family:inherit;}
+.status-sel.bg{background:#dcfce7;color:#15803d;}
+.status-sel.bor{background:#fff7ed;color:#c2410c;}
+.status-sel.bvd{background:#fee2e2;color:#b91c1c;}
+/* Inventory badges on menu cards */
+.inv-low{position:absolute;bottom:5px;left:5px;font-size:9px;font-weight:700;padding:2px 5px;border-radius:8px;background:rgba(234,88,12,.85);color:#fff;}
+.inv-out{position:absolute;bottom:5px;left:5px;font-size:9px;font-weight:700;padding:2px 5px;border-radius:8px;background:rgba(239,68,68,.85);color:#fff;}
+.mc.oos{opacity:.6;}
+.mc.oos .mc-add{display:none;}
+/* Type rows in product form */
+.type-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.type-row input{flex:1;padding:7px 9px;border:1px solid var(--bd);border-radius:7px;font-family:inherit;font-size:13px;color:var(--tx);background:var(--bg);outline:none;}
+.type-row input:focus{border-color:var(--acc);}
+.rm-type{width:26px;height:26px;border-radius:6px;border:1px solid #fecaca;background:none;cursor:pointer;color:#ef4444;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-family:inherit;line-height:1;}
+/* Image upload preview */
+.img-prev-wrap{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.img-prev-wrap img{width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);flex-shrink:0;}
+.img-prev-info{flex:1;min-width:0;}
+.img-prev-name{font-size:11px;color:var(--mu);word-break:break-all;}
 
 /* Toggle */
 .tgl{position:relative;width:38px;height:21px;flex-shrink:0;}
@@ -441,6 +461,7 @@ tbody tr.rh:hover{background:var(--sf);}
         <span class="dl">From</span><input id="of" type="date" class="di" onchange="loadOrders()">
         <span class="dl">To</span><input id="ot2" type="date" class="di" onchange="loadOrders()">
         <select id="opm" class="dsel" onchange="loadOrders()"><option value="">All Methods</option><option value="cash">Cash</option><option value="gcash">GCash</option></select>
+        <select id="ost" class="dsel" onchange="loadOrders()"><option value="">All Statuses</option><option value="completed">Paid</option><option value="refunded">Refunded</option><option value="void">Void</option></select>
       </div>
     </div>
     <div class="sg">
@@ -456,7 +477,7 @@ tbody tr.rh:hover{background:var(--sf);}
 <div id="pg-products" class="pg">
   <div class="pg-std">
     <div class="ph"><h1 class="pt">Products</h1><button class="btn btn-k" onclick="openIM()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button></div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="5">Loading…</td></tr></tbody></table></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Inv. Qty</th><th>Types</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
   </div>
 </div>
 
@@ -553,18 +574,10 @@ tbody tr.rh:hover{background:var(--sf);}
   </div>
 </div>
 
-<!-- Status Change Modal -->
-<div id="stmod" class="ov">
-  <div class="modal" style="width:min(300px,calc(100vw - 32px));">
-    <div class="mhd"><h2 class="mtitle">Change Status</h2><button class="mcl" onclick="document.getElementById('stmod').classList.remove('open')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <p id="st-cur" style="font-size:13px;color:var(--mu);margin-bottom:14px;"></p>
-    <div id="st-opts" style="display:flex;flex-direction:column;gap:8px;"></div>
-  </div>
-</div>
 
 <!-- Product Modal -->
 <div id="imod" class="ov">
-  <div class="modal" style="width:min(440px,calc(100vw - 32px));">
+  <div class="modal" style="width:min(500px,calc(100vw - 32px));">
     <div class="mhd"><h2 class="mtitle" id="imt">Add Product</h2><button class="mcl" onclick="closeIM()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <form onsubmit="saveItem(event)">
       <div class="fg"><label class="fl">Product Name *</label><input id="fn" type="text" class="fi" placeholder="e.g. Chicken Adobo" required></div>
@@ -572,7 +585,26 @@ tbody tr.rh:hover{background:var(--sf);}
         <div class="fg"><label class="fl">Price (₱) *</label><input id="fp" type="number" class="fi" placeholder="0.00" step="0.01" min="0" required></div>
         <div class="fg"><label class="fl">Category</label><input id="fc" type="text" class="fi" placeholder="e.g. Main Dish"></div>
       </div>
-      <div class="fg"><label class="fl">Image URL (optional)</label><input id="fi2" type="url" class="fi" placeholder="https://…"></div>
+      <div class="fg">
+        <label class="fl">Product Image (optional)</label>
+        <input id="fi2" type="file" class="fi" accept="image/*" onchange="onImgChange(this)" style="padding:6px 10px;cursor:pointer;">
+        <div id="img-prev-wrap" class="img-prev-wrap" style="display:none;">
+          <img id="img-prev-img" src="" alt="">
+          <div class="img-prev-info">
+            <div id="img-prev-name" class="img-prev-name"></div>
+            <button type="button" class="btn btn-o btn-s btn-d" style="margin-top:5px;" onclick="clearImg()">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Inv. Qty (optional)</label><input id="fq" type="number" class="fi" placeholder="Leave blank = N/A" min="0" step="1"></div>
+        <div class="fg" style="display:flex;flex-direction:column;"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Sizes / Types (optional — leave empty for N/A)</label>
+        <div id="types-list"></div>
+        <button type="button" class="btn btn-o btn-s" style="margin-top:6px;" onclick="addTypeRow()">+ Add Size / Type</button>
+      </div>
       <div class="fg"><div class="cbw"><input id="fa" type="checkbox" checked><label for="fa" style="font-size:13px;cursor:pointer;">Show in Cashier menu</label></div></div>
       <div class="fa2">
         <button type="button" class="btn btn-o" onclick="closeIM()">Cancel</button>
@@ -582,18 +614,28 @@ tbody tr.rh:hover{background:var(--sf);}
   </div>
 </div>
 
+<!-- Type Picker Modal (cashier) -->
+<div id="tpmod" class="ov">
+  <div class="modal" style="width:min(300px,calc(100vw - 32px));">
+    <div class="mhd"><h2 class="mtitle" id="tp-title">Choose Size</h2><button class="mcl" onclick="closeTP()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div id="tp-opts" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
 const CFG={URL:'https://vsldzhmfdvqvshtlbfpc.supabase.co',KEY:'sb_publishable_xdTGlsl0DEmx75l_8EqjPA_d_gXtHbq',VAT:.12};
 const sb=supabase.createClient(CFG.URL,CFG.KEY);
 const S={
-  cart:JSON.parse(localStorage.getItem('cp_cart')||'[]'),
+  cart:JSON.parse(localStorage.getItem('cp_cart')||'[]').map(i=>({...i,cartId:i.cartId||i.id})),
   menu:[],inv:[],orders:[],
   sec:'cashier',pm:null,eid:null,cat:'All',
   queue:JSON.parse(localStorage.getItem('cp_queue')||'[]'),
   charts:{},
-  cfg:JSON.parse(localStorage.getItem('cp_cfg')||'{}')
+  cfg:JSON.parse(localStorage.getItem('cp_cfg')||'{}'),
+  imgFile:null,
+  imgCurUrl:null
 };
 
 const fmt=n=>`₱${parseFloat(n||0).toFixed(2)}`;
@@ -684,18 +726,53 @@ function applyF(){
 function renderMenu(items){
   const g=document.getElementById('mg');
   if(!items.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">No items found</div>';return;}
-  g.innerHTML=items.map(i=>`<div class="mc" onclick="addC('${i.id}')"><div class="mci">${imgH(i)}<button class="mc-add" onclick="event.stopPropagation();addC('${i.id}')">+</button></div><div class="mcb"><div class="mc-n">${i.name}</div>${i.category?`<div class="mc-c">${i.category}</div>`:''}<div class="mc-p">${fmt(i.price)}</div></div></div>`).join('');
+  g.innerHTML=items.map(i=>{
+    const hasInv=i.inv_qty!==null&&i.inv_qty!==undefined;
+    const oos=hasInv&&i.inv_qty<=0;
+    const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
+    const badge=oos?'<span class="inv-out">Out of stock</span>':low?`<span class="inv-low">${i.inv_qty} left</span>`:'';
+    const hasTypes=i.product_types&&i.product_types.length>0;
+    const priceLabel=hasTypes?`from ${fmt(Math.min(...i.product_types.map(t=>t.price)))}`:fmt(i.price);
+    const clickFn=oos?`toast('This item is out of stock')`:`addC('${i.id}')`;
+    return`<div class="mc${oos?' oos':''}" onclick="${clickFn}"><div class="mci">${imgH(i)}<button class="mc-add" onclick="event.stopPropagation();${clickFn}">+</button>${badge}</div><div class="mcb"><div class="mc-n">${i.name}</div>${i.category?`<div class="mc-c">${i.category}</div>`:''}<div class="mc-p">${priceLabel}</div></div></div>`;
+  }).join('');
 }
 
 // Cart
-function addC(id){const item=S.menu.find(i=>i.id===id);if(!item)return;const ex=S.cart.find(c=>c.id===id);if(ex)ex.quantity++;else S.cart.push({...item,quantity:1});saveCart();renderCart();}
-function qch(id,d){const idx=S.cart.findIndex(c=>c.id===id);if(idx<0)return;S.cart[idx].quantity+=d;if(S.cart[idx].quantity<=0)S.cart.splice(idx,1);saveCart();renderCart();}
+function addC(id){
+  const item=S.menu.find(i=>i.id===id);
+  if(!item)return;
+  if(item.inv_qty!==null&&item.inv_qty!==undefined&&item.inv_qty<=0){toast('This item is out of stock');return;}
+  if(item.product_types&&item.product_types.length>0){openTP(item);return;}
+  addToCart(item,item.price,null);
+}
+function addToCart(item,price,variant){
+  const cartId=variant?`${item.id}::${variant}`:item.id;
+  const name=variant?`${item.name} (${variant})`:item.name;
+  const ex=S.cart.find(c=>c.cartId===cartId);
+  if(ex)ex.quantity++;
+  else S.cart.push({...item,cartId,name,price,quantity:1});
+  saveCart();renderCart();
+}
+function openTP(item){
+  document.getElementById('tp-title').textContent=item.name;
+  document.getElementById('tp-opts').innerHTML=item.product_types.map(t=>`<button class="btn btn-o" style="display:flex;justify-content:space-between;width:100%;" onclick="addCWithType('${item.id}','${t.name}',${t.price})"><span>${t.name}</span><span style="font-weight:700;">${fmt(t.price)}</span></button>`).join('');
+  document.getElementById('tpmod').classList.add('open');
+}
+function closeTP(){document.getElementById('tpmod').classList.remove('open');}
+function addCWithType(id,typeName,typePrice){
+  closeTP();
+  const item=S.menu.find(i=>i.id===id);
+  if(!item)return;
+  addToCart(item,parseFloat(typePrice),typeName);
+}
+function qch(cartId,d){const idx=S.cart.findIndex(c=>c.cartId===cartId);if(idx<0)return;S.cart[idx].quantity+=d;if(S.cart[idx].quantity<=0)S.cart.splice(idx,1);saveCart();renderCart();}
 function clearCart(){if(S.cart.length&&!confirm('Clear the cart?'))return;S.cart=[];saveCart();renderCart();}
 function saveCart(){localStorage.setItem('cp_cart',JSON.stringify(S.cart));}
 
 function cartItemsHTML(){
   if(!S.cart.length)return`<div class="ce">${CART_SVG}<span style="font-size:14px;font-weight:500;">Cart is empty</span><span style="font-size:12px;">Tap items to add</span></div>`;
-  return S.cart.map(i=>`<div class="cit"><div class="cth">${thmH(i)}</div><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmt(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.id}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.id}',1)">+</button></div><div class="cit-t">${fmt(i.price*i.quantity)}</div></div>`).join('');
+  return S.cart.map(i=>`<div class="cit"><div class="cth">${thmH(i)}</div><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmt(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.cartId}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.cartId}',1)">+</button></div><div class="cit-t">${fmt(i.price*i.quantity)}</div></div>`).join('');
 }
 
 function renderCart(){
@@ -790,20 +867,39 @@ async function pushInv(txn){
   const{data:inv,error:e1}=await sb.from('invoices').insert([{...f,synced_at:new Date().toISOString()}]).select().single();
   if(e1)throw e1;
   const{error:e2}=await sb.from('invoice_items').insert(items.map(it=>({invoice_id:inv.id,...it})));
-  if(e2)throw e2;return inv;
+  if(e2)throw e2;
+  for(const it of items){
+    const m=S.menu.find(mi=>mi.id===it.menu_item_id);
+    if(m&&m.inv_qty!==null&&m.inv_qty!==undefined){
+      const nq=Math.max(0,m.inv_qty-it.quantity);
+      await sb.from('menu_items').update({inv_qty:nq,updated_at:new Date().toISOString()}).eq('id',m.id);
+      m.inv_qty=nq;
+    }
+  }
+  return inv;
 }
 
 // Products
 async function loadInv(){
-  document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="5">Loading…</td></tr>';
+  document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="7">Loading…</td></tr>';
   const{data,error}=await sb.from('menu_items').select('*').order('created_at',{ascending:false});
-  if(error){document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="5" style="color:#ef4444;">Error</td></tr>';return;}
+  if(error){document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="7" style="color:#ef4444;">Error</td></tr>';return;}
   S.inv=data||[];renderInv();
 }
 function renderInv(){
   const b=document.getElementById('ib');
-  if(!S.inv.length){b.innerHTML='<tr class="lr"><td colspan="5">No products yet.</td></tr>';return;}
-  b.innerHTML=S.inv.map(item=>`<tr class="rh"><td style="font-weight:500;">${item.name}</td><td style="font-weight:600;">${fmt(item.price)}</td><td>${item.category?`<span class="bdg bcat">${item.category}</span>`:'<span style="color:var(--mu)">—</span>'}</td><td><div style="display:flex;align-items:center;gap:8px;"><label class="tgl"><input type="checkbox" ${item.is_available_in_cashier?'checked':''} onchange="togAvail('${item.id}',this.checked)"><span class="tgs"></span></label><span class="bdg ${item.is_available_in_cashier?'bg':'bgr'}">${item.is_available_in_cashier?'✓ Visible':'Hidden'}</span></div></td><td><div style="display:flex;gap:5px;"><button class="btn btn-o btn-s" onclick="openIM('${item.id}')">Edit</button><button class="btn btn-o btn-s btn-d" onclick="delItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Delete</button></div></td></tr>`).join('');
+  if(!S.inv.length){b.innerHTML='<tr class="lr"><td colspan="7">No products yet.</td></tr>';return;}
+  b.innerHTML=S.inv.map(item=>{
+    const iq=item.inv_qty;
+    let iqD;
+    if(iq===null||iq===undefined)iqD='<span style="color:var(--mu)">N/A</span>';
+    else if(iq===0)iqD='<span class="bdg bvd">Sold Out</span>';
+    else if(iq<=5)iqD=`<span style="color:#ea580c;font-weight:600;">${iq}</span>`;
+    else iqD=`<span style="font-weight:600;">${iq}</span>`;
+    const pt=item.product_types;
+    const ptD=pt&&pt.length?`<span class="bdg bb">${pt.length} type${pt.length>1?'s':''}</span>`:'<span style="color:var(--mu)">N/A</span>';
+    return`<tr class="rh"><td style="font-weight:500;">${item.name}</td><td style="font-weight:600;">${fmt(item.price)}</td><td>${item.category?`<span class="bdg bcat">${item.category}</span>`:'<span style="color:var(--mu)">—</span>'}</td><td>${iqD}</td><td>${ptD}</td><td><div style="display:flex;align-items:center;gap:8px;"><label class="tgl"><input type="checkbox" ${item.is_available_in_cashier?'checked':''} onchange="togAvail('${item.id}',this.checked)"><span class="tgs"></span></label><span class="bdg ${item.is_available_in_cashier?'bg':'bgr'}">${item.is_available_in_cashier?'✓ Visible':'Hidden'}</span></div></td><td><div style="display:flex;gap:5px;"><button class="btn btn-o btn-s" onclick="openIM('${item.id}')">Edit</button><button class="btn btn-o btn-s btn-d" onclick="delItem('${item.id}','${item.name.replace(/'/g,"\\'")}')">Delete</button></div></td></tr>`;
+  }).join('');
 }
 async function togAvail(id,val){
   const{error}=await sb.from('menu_items').update({is_available_in_cashier:val,updated_at:new Date().toISOString()}).eq('id',id);
@@ -812,15 +908,97 @@ async function togAvail(id,val){
   const it=S.inv.find(i=>i.id===id);if(it)it.is_available_in_cashier=val;renderInv();loadMenu();
 }
 function openIM(id=null){
-  S.eid=id;document.getElementById('imt').textContent=id?'Edit Product':'Add Product';
-  if(id){const it=S.inv.find(i=>i.id===id);document.getElementById('fn').value=it.name;document.getElementById('fp').value=it.price;document.getElementById('fc').value=it.category||'';document.getElementById('fi2').value=it.image_url||'';document.getElementById('fa').checked=it.is_available_in_cashier;}
-  else{['fn','fp','fc','fi2'].forEach(id=>document.getElementById(id).value='');document.getElementById('fa').checked=true;}
+  S.eid=id;S.imgFile=null;
+  document.getElementById('imt').textContent=id?'Edit Product':'Add Product';
+  document.getElementById('fi2').value='';
+  if(id){
+    const it=S.inv.find(i=>i.id===id);
+    document.getElementById('fn').value=it.name;
+    document.getElementById('fp').value=it.price;
+    document.getElementById('fc').value=it.category||'';
+    document.getElementById('fq').value=it.inv_qty!==null&&it.inv_qty!==undefined?it.inv_qty:'';
+    document.getElementById('fa').checked=it.is_available_in_cashier;
+    S.imgCurUrl=it.image_url||null;
+    if(safeImgSrc(it.image_url)){
+      document.getElementById('img-prev-wrap').style.display='flex';
+      document.getElementById('img-prev-img').src=it.image_url;
+      document.getElementById('img-prev-name').textContent='Current image';
+    } else {
+      document.getElementById('img-prev-wrap').style.display='none';
+    }
+    renderTypeRows(it.product_types||[]);
+  } else {
+    ['fn','fp','fc','fq'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('fa').checked=true;
+    S.imgCurUrl=null;
+    document.getElementById('img-prev-wrap').style.display='none';
+    renderTypeRows([]);
+  }
   document.getElementById('imod').classList.add('open');
 }
-function closeIM(){document.getElementById('imod').classList.remove('open');S.eid=null;}
+function closeIM(){document.getElementById('imod').classList.remove('open');S.eid=null;S.imgFile=null;S.imgCurUrl=null;}
+
+function onImgChange(input){
+  const file=input.files[0];
+  if(!file){S.imgFile=null;return;}
+  S.imgFile=file;
+  const r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('img-prev-wrap').style.display='flex';
+    document.getElementById('img-prev-img').src=e.target.result;
+    document.getElementById('img-prev-name').textContent=file.name;
+  };
+  r.readAsDataURL(file);
+}
+function clearImg(){
+  document.getElementById('fi2').value='';
+  document.getElementById('img-prev-wrap').style.display='none';
+  document.getElementById('img-prev-img').src='';
+  document.getElementById('img-prev-name').textContent='';
+  S.imgFile=null;S.imgCurUrl=null;
+}
+async function uploadImg(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const path=`products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const{error}=await sb.storage.from('product-images').upload(path,file,{cacheControl:'3600',contentType:file.type});
+  if(error)throw error;
+  const{data}=sb.storage.from('product-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+function addTypeRow(name='',price=''){
+  const tl=document.getElementById('types-list');
+  const div=document.createElement('div');
+  div.className='type-row';
+  div.innerHTML=`<input class="type-name" type="text" placeholder="e.g. Small" value="${name}"><input class="type-price" type="number" placeholder="Price (₱)" step="0.01" min="0" value="${price}"><button type="button" class="rm-type" onclick="this.parentNode.remove()">×</button>`;
+  tl.appendChild(div);
+}
+function renderTypeRows(types){
+  document.getElementById('types-list').innerHTML='';
+  (types||[]).forEach(t=>addTypeRow(t.name,t.price));
+}
+function getTypesFromForm(){
+  const rows=document.querySelectorAll('.type-row');
+  const types=[];
+  rows.forEach(r=>{
+    const n=r.querySelector('.type-name').value.trim();
+    const p=parseFloat(r.querySelector('.type-price').value);
+    if(n&&!isNaN(p)&&p>=0)types.push({name:n,price:p});
+  });
+  return types.length?types:null;
+}
+
 async function saveItem(e){
-  e.preventDefault();const btn=document.getElementById('sb2');btn.textContent='Saving…';btn.disabled=true;
-  const payload={name:document.getElementById('fn').value.trim(),price:parseFloat(document.getElementById('fp').value),category:document.getElementById('fc').value.trim()||null,image_url:document.getElementById('fi2').value.trim()||null,is_available_in_cashier:document.getElementById('fa').checked,updated_at:new Date().toISOString()};
+  e.preventDefault();
+  const btn=document.getElementById('sb2');btn.textContent='Saving…';btn.disabled=true;
+  let img_url=S.imgCurUrl||null;
+  if(S.imgFile){
+    try{img_url=await uploadImg(S.imgFile);}
+    catch(err){toast(`Image upload failed: ${err.message}`);btn.textContent='Save Product';btn.disabled=false;return;}
+  }
+  const qv=document.getElementById('fq').value;
+  const inv_qty=qv!==''?parseInt(qv):null;
+  const product_types=getTypesFromForm();
+  const payload={name:document.getElementById('fn').value.trim(),price:parseFloat(document.getElementById('fp').value),category:document.getElementById('fc').value.trim()||null,image_url:img_url,inv_qty,product_types,is_available_in_cashier:document.getElementById('fa').checked,updated_at:new Date().toISOString()};
   const{error}=S.eid?await sb.from('menu_items').update(payload).eq('id',S.eid):await sb.from('menu_items').insert([{...payload,created_at:new Date().toISOString()}]);
   btn.textContent='Save Product';btn.disabled=false;
   if(error){toast(`Error: ${error.message}`);return;}
@@ -858,20 +1036,31 @@ async function loadDash(){
   document.getElementById('tb').innerHTML=list.length?list.slice(0,5).map(i=>`<tr class="rh" onclick="viewRcp('${i.id}')" style="cursor:pointer;"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td>${fmtT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button></td></tr>`).join(''):'<tr class="lr"><td colspan="6">No transactions today</td></tr>';
 }
 
-function statusPill(status){
-  if(status==='refunded')return`<span class="bdg bor" style="cursor:pointer;">Refunded</span>`;
-  if(status==='void')return`<span class="bdg bvd" style="cursor:pointer;">Void</span>`;
-  return`<span class="bdg bg" style="cursor:pointer;">Paid</span>`;
+function statusSel(id,status){
+  const v=status||'completed';
+  const cls=v==='refunded'?'bor':v==='void'?'bvd':'bg';
+  return`<select class="status-sel ${cls}" data-id="${id}" onchange="changeStatus(this)" onclick="event.stopPropagation()"><option value="completed"${v==='completed'?' selected':''}>Paid</option><option value="refunded"${v==='refunded'?' selected':''}>Refunded</option><option value="void"${v==='void'?' selected':''}>Void</option></select>`;
+}
+async function changeStatus(sel){
+  const id=sel.dataset.id,val=sel.value;
+  const lm={completed:'Paid',refunded:'Refunded',void:'Void'};
+  if(!confirm(`Set order status to "${lm[val]}"?`)){loadOrders();return;}
+  const{error}=await sb.from('invoices').update({payment_status:val}).eq('id',id);
+  if(error){toast(`Error: ${error.message}`);loadOrders();return;}
+  sel.className=`status-sel ${val==='refunded'?'bor':val==='void'?'bvd':'bg'}`;
+  toast(`Status updated to ${lm[val]}`);
+  loadOrders();
 }
 
 // Orders
 async function loadOrders(){
-  const from=document.getElementById('of').value,to=document.getElementById('ot2').value,pm=document.getElementById('opm').value;
+  const from=document.getElementById('of').value,to=document.getElementById('ot2').value,pm=document.getElementById('opm').value,st=document.getElementById('ost').value;
   if(!from||!to)return;
   document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Loading…</td></tr>';
   const toN=new Date(new Date(to).getTime()+86400000).toISOString().split('T')[0];
   let q=sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:false});
   if(pm)q=q.eq('payment_method',pm);
+  if(st)q=q.eq('payment_status',st);
   const{data,error}=await q;
   if(error){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Error loading orders</td></tr>';return;}
   const list=data||[];
@@ -882,23 +1071,7 @@ async function loadOrders(){
   document.getElementById('or-cnt').textContent=list.length;
   document.getElementById('or-avg').textContent=fmt(acnt?rev/acnt:0);
   if(!list.length){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">No orders in this period</td></tr>';return;}
-  document.getElementById('ord-body').innerHTML=list.map((i,idx)=>`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td onclick="event.stopPropagation();changeStatus('${i.id}','${i.payment_status||'completed'}')">${statusPill(i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></div></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="7"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${i.payment_method==='gcash'?'GCash':'Cash'})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`).join('');
-}
-
-function changeStatus(id,current){
-  const lm={completed:'Paid',refunded:'Refunded',void:'Void'};
-  const choices=Object.entries(lm).filter(([v])=>v!==current).map(([v,l])=>({v,l}));
-  document.getElementById('st-cur').textContent=`Current status: ${lm[current]||'Paid'}`;
-  document.getElementById('st-opts').innerHTML=choices.map(c=>`<button class="btn btn-o" style="justify-content:flex-start;" onclick="confirmStatus('${id}','${c.v}','${c.l}')">${c.l}</button>`).join('');
-  document.getElementById('stmod').classList.add('open');
-}
-async function confirmStatus(id,val,label){
-  if(!confirm(`Set order status to "${label}"?`))return;
-  document.getElementById('stmod').classList.remove('open');
-  const{error}=await sb.from('invoices').update({payment_status:val}).eq('id',id);
-  if(error){toast(`Error: ${error.message}`);return;}
-  toast(`Status updated to ${label}`);
-  loadOrders();
+  document.getElementById('ord-body').innerHTML=list.map((i,idx)=>`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></div></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="7"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${i.payment_method==='gcash'?'GCash':'Cash'})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`).join('');
 }
 function togRow(idx){
   const row=document.getElementById(`exp-${idx}`);
@@ -982,8 +1155,8 @@ function saveSt(){
 
 function cOpt(yf){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',maxTicksLimit:12}},y:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',callback:yf}}}};}
 
-['pmod','rmod','imod','mcmod','stmod'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();['pmod','rmod','imod','mcmod','stmod'].forEach(id=>document.getElementById(id).classList.remove('open'));}});
+['pmod','rmod','imod','mcmod','tpmod'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();closeTP();['pmod','rmod','imod','mcmod','tpmod'].forEach(id=>document.getElementById(id).classList.remove('open'));}});
 
 function boot(){
   if(S.cfg.vatOn===false)CFG.VAT=0;else if(S.cfg.vatRate)CFG.VAT=S.cfg.vatRate/100;
