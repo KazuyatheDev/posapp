@@ -695,12 +695,8 @@ function safeImgSrc(url){
   try{const u=new URL(t);return(u.protocol==='http:'||u.protocol==='https:')?t:null;}catch{return null;}
 }
 function imgFallback(el){const l=getStore().logo;el.parentNode.innerHTML=l?'<div class="mci-ph"><img src="'+l+'" style="width:70%;height:70%;object-fit:contain;opacity:.75;"></div>':'<div class="mci-ph">'+PH_SVG+'</div>';}
-function imgH(item){const src=safeImgSrc(item.image_url);if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="imgFallback(this)">`;}const l=getStore().logo;if(l)return`<div class="mci-ph"><img src="${l}" style="width:70%;height:70%;object-fit:contain;opacity:.75;"></div>`;return`<div class="mci-ph">${PH_SVG}</div>`;}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="imgFallback(this)">`;}
-  return`<div class="mci-ph">${PH_SVG}</div>`;
-}
-function thmH(item){const src=safeImgSrc(item.image_url);if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;">`;}const l=getStore().logo;return l?`<img src="${l}" alt="" style="width:100%;height:100%;object-fit:contain;opacity:.7;">`:PH_SVG;}" alt="" style="width:100%;height:100%;object-fit:cover;">`;}
-  return PH_SVG;
-}
+function imgH(item){const src=safeImgSrc(item.image_url);if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="imgFallback(this)">`;}const l=getStore().logo;if(l)return`<div class="mci-ph"><img src="${l}" style="width:70%;height:70%;object-fit:contain;opacity:.75;"></div>`;return`<div class="mci-ph">${PH_SVG}</div>`;}
+function thmH(item){const src=safeImgSrc(item.image_url);if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;">`;}const l=getStore().logo;return l?`<img src="${l}" alt="" style="width:100%;height:100%;object-fit:contain;opacity:.7;">`:PH_SVG;}
 
 // Sidebar
 function openSB(){document.getElementById('sb').classList.add('mob-open');document.getElementById('sbov').classList.add('vis');}
