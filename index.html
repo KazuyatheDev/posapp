@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--sb:240px;--sb-c:64px;--cart:300px;--bg:#fff;--sf:#f9fafb;--bd:#e5e7eb;--tx:#111827;--mu:#6b7280;--acc:#111827;--mhdr:52px;}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -36,10 +37,6 @@ svg{display:block;}
 .s-bi svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.2;}
 .s-bt{font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:700;white-space:nowrap;transition:opacity .2s,width .25s;overflow:hidden;}
 #sb.coll .s-bt{opacity:0;width:0;}
-.sb-tog{width:28px;height:28px;border-radius:7px;border:1px solid var(--bd);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
-.sb-tog:hover{background:var(--sf);}
-.sb-tog svg{width:16px;height:16px;stroke:#374151;fill:none;stroke-width:2;}
-#sb.coll .sb-tog{display:none;}
 .s-nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden;}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--mu);border:none;background:none;width:100%;text-align:left;transition:all .15s;white-space:nowrap;overflow:hidden;position:relative;}
 .ni:hover:not(.active){background:var(--sf);color:var(--tx);}
@@ -184,6 +181,12 @@ tbody tr.rh:hover{background:var(--sf);}
 .bb{background:#dbeafe;color:#1d4ed8;}
 .bgr{background:#f3f4f6;color:#6b7280;}
 .bcat{background:#f3f4f6;color:#374151;}
+.bor{background:#fff7ed;color:#c2410c;}
+.bvd{background:#fee2e2;color:#b91c1c;}
+/* Eye icon button */
+.eye-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--bd);background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;padding:0;flex-shrink:0;}
+.eye-btn:hover{background:var(--sf);}
+.eye-btn svg{width:14px;height:14px;stroke:#6b7280;fill:none;stroke-width:2;}
 
 /* Toggle */
 .tgl{position:relative;width:38px;height:21px;flex-shrink:0;}
@@ -304,9 +307,7 @@ tbody tr.rh:hover{background:var(--sf);}
   #sb.coll .ni{justify-content:flex-start;padding:9px 12px;}
   #sb.coll .ni-lbl{opacity:1;width:auto;overflow:visible;}
   #sb.coll .s-ver{opacity:1;}
-  #sb.coll .sb-tog{display:flex;}
   #sb.coll .ni::after{display:none;}
-  .sb-tog{display:none;}
   #mob-hdr{display:flex;}
   #cp{display:none;}
   #mobcb{display:flex;}
@@ -345,7 +346,6 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="s-bi"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <span class="s-bt">PoS 4 All</span>
     </div>
-    <button class="sb-tog" id="sbtog" onclick="toggleSB()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
   </div>
   <nav class="s-nav">
     <button class="ni" data-s="dashboard" data-tip="Dashboard" onclick="navTo('dashboard')">
@@ -424,7 +424,7 @@ tbody tr.rh:hover{background:var(--sf);}
         <div style="font-size:14px;font-weight:600;">Recent Transactions</div>
         <button class="btn btn-o btn-s" onclick="navTo('orders')">View All Orders →</button>
       </div>
-      <div class="tw"><table><thead><tr><th>Invoice #</th><th>Time</th><th>Items</th><th>Payment</th><th>Total</th></tr></thead><tbody id="tb"><tr class="lr"><td colspan="5">Loading…</td></tr></tbody></table></div>
+      <div class="tw"><table><thead><tr><th>Invoice #</th><th>Time</th><th>Items</th><th>Payment</th><th>Total</th><th style="width:40px;"></th></tr></thead><tbody id="tb"><tr class="lr"><td colspan="6">Loading…</td></tr></tbody></table></div>
     </div>
   </div>
 </div>
@@ -448,7 +448,7 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="sc"><div class="sl">Transactions</div><div class="sv" id="or-cnt">0</div></div>
       <div class="sc"><div class="sl">Avg / Transaction</div><div class="sv" id="or-avg">₱0.00</div></div>
     </div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Total</th><th style="width:32px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="6">Loading…</td></tr></tbody></table></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Total</th><th style="width:64px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
   </div>
 </div>
 
@@ -546,6 +546,19 @@ tbody tr.rh:hover{background:var(--sf);}
   <div class="modal" style="width:min(350px,calc(100vw - 32px));">
     <div class="mhd"><h2 class="mtitle">Receipt</h2><button class="mcl" onclick="closeRcp()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div id="rcp"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-o" style="flex:1;" onclick="printRcp()"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button>
+      <button class="btn btn-k" style="flex:1;" onclick="downloadRcpPDF()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Change Modal -->
+<div id="stmod" class="ov">
+  <div class="modal" style="width:min(300px,calc(100vw - 32px));">
+    <div class="mhd"><h2 class="mtitle">Change Status</h2><button class="mcl" onclick="document.getElementById('stmod').classList.remove('open')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <p id="st-cur" style="font-size:13px;color:var(--mu);margin-bottom:14px;"></p>
+    <div id="st-opts" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 </div>
 
@@ -594,26 +607,23 @@ function invN(){const n=new Date(),p=v=>String(v).padStart(2,'0');return`INV-${n
 const PH_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.4"><path d="M3 2v5a2 2 0 004 0V2"/><line x1="5" y1="9" x2="5" y2="22"/><path d="M21 2v20"/><path d="M21 7c-2.8 0-5 2.2-5 5v3h5"/></svg>`;
 const CART_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>`;
 
+function safeImgSrc(url){
+  if(!url||typeof url!=='string')return null;
+  const t=url.trim();
+  try{const u=new URL(t);return(u.protocol==='http:'||u.protocol==='https:')?t:null;}catch{return null;}
+}
 function imgH(item){
-  if(item.image_url&&item.image_url.startsWith('http'))
-    return`<img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<div class=\\'mci-ph\\'>${PH_SVG}</div>'">`;
+  const src=safeImgSrc(item.image_url);
+  if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<div class=\\'mci-ph\\'>${PH_SVG}</div>'">`;}
   return`<div class="mci-ph">${PH_SVG}</div>`;
 }
 function thmH(item){
-  if(item.image_url&&item.image_url.startsWith('http'))
-    return`<img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;">`;
+  const src=safeImgSrc(item.image_url);
+  if(src){const e=src.replace(/"/g,'%22');return`<img src="${e}" alt="" style="width:100%;height:100%;object-fit:cover;">`;}
   return PH_SVG;
 }
 
 // Sidebar
-function toggleSB(){
-  const s=document.getElementById('sb'),b=document.getElementById('sbtog');
-  s.classList.toggle('coll');
-  const c=s.classList.contains('coll');
-  b.innerHTML=c
-    ?`<svg viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`
-    :`<svg viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>`;
-}
 function openSB(){document.getElementById('sb').classList.add('mob-open');document.getElementById('sbov').classList.add('vis');}
 function closeSB(){document.getElementById('sb').classList.remove('mob-open');document.getElementById('sbov').classList.remove('vis');}
 
@@ -623,6 +633,7 @@ function navTo(s){
   document.querySelectorAll('.ni').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
   document.getElementById(`pg-${s}`).classList.add('active');
+  document.getElementById('mobcb').style.display=s!=='cashier'?'none':'';
   closeSB();
   if(s==='dashboard')loadDash();
   if(s==='orders')loadOrders();
@@ -822,6 +833,8 @@ async function delItem(id,name){
   toast('Product deleted');loadInv();loadMenu();
 }
 
+const EYE_SVG=`<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
 // Dashboard
 async function loadDash(){
   document.getElementById('dd').textContent=fmtD(new Date().toISOString());
@@ -829,39 +842,63 @@ async function loadDash(){
   const{data,error}=await sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',d0).lt('created_at',d1).order('created_at',{ascending:false});
   if(error)return;
   const list=data||[];
-  const rev=list.reduce((s,i)=>s+parseFloat(i.total_amount),0);
-  const ic=list.reduce((s,i)=>s+(i.invoice_items||[]).reduce((a,it)=>a+it.quantity,0),0);
+  const active=list.filter(i=>i.payment_status!=='refunded'&&i.payment_status!=='void');
+  const rev=active.reduce((s,i)=>s+parseFloat(i.total_amount),0);
+  const ic=active.reduce((s,i)=>s+(i.invoice_items||[]).reduce((a,it)=>a+it.quantity,0),0);
   document.getElementById('mr').textContent=fmt(rev);
-  document.getElementById('mt').textContent=list.length;
+  document.getElementById('mt').textContent=active.length;
   document.getElementById('mi').textContent=ic;
   const hrs=Array(24).fill(0);
-  list.forEach(i=>{hrs[new Date(i.created_at).getHours()]+=parseFloat(i.total_amount);});
+  active.forEach(i=>{hrs[new Date(i.created_at).getHours()]+=parseFloat(i.total_amount);});
   if(S.charts.d)S.charts.d.destroy();
   S.charts.d=new Chart(document.getElementById('dc'),{type:'line',data:{labels:Array.from({length:24},(_,h)=>`${h}:00`),datasets:[{label:'Sales',data:hrs,borderColor:'#111827',backgroundColor:'rgba(17,24,39,.07)',borderWidth:2,pointRadius:3,fill:true,tension:.35}]},options:cOpt(v=>`₱${v}`)});
-  const im={};list.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{im[it.item_name]=(im[it.item_name]||0)+it.quantity;}));
+  const im={};active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{im[it.item_name]=(im[it.item_name]||0)+it.quantity;}));
   const t5=Object.entries(im).sort((a,b)=>b[1]-a[1]).slice(0,5);
   document.getElementById('ti').innerHTML=t5.length?t5.map(([n,q],i)=>`<div class="tlr"><div class="tnk">${i+1}</div><div class="tn">${n}</div><div class="tq">${q} sold</div></div>`).join(''):'<div class="empty" style="padding:10px 0;">No sales today</div>';
-  document.getElementById('tb').innerHTML=list.length?list.slice(0,5).map(i=>`<tr class="rh" onclick="viewRcp('${i.id}')" style="cursor:pointer;"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td>${fmtT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td style="font-weight:700;">${fmt(i.total_amount)}</td></tr>`).join(''):'<tr class="lr"><td colspan="5">No transactions today</td></tr>';
+  document.getElementById('tb').innerHTML=list.length?list.slice(0,5).map(i=>`<tr class="rh" onclick="viewRcp('${i.id}')" style="cursor:pointer;"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td>${fmtT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button></td></tr>`).join(''):'<tr class="lr"><td colspan="6">No transactions today</td></tr>';
+}
+
+function statusPill(status){
+  if(status==='refunded')return`<span class="bdg bor" style="cursor:pointer;">Refunded</span>`;
+  if(status==='void')return`<span class="bdg bvd" style="cursor:pointer;">Void</span>`;
+  return`<span class="bdg bg" style="cursor:pointer;">Paid</span>`;
 }
 
 // Orders
 async function loadOrders(){
   const from=document.getElementById('of').value,to=document.getElementById('ot2').value,pm=document.getElementById('opm').value;
   if(!from||!to)return;
-  document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="6">Loading…</td></tr>';
+  document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Loading…</td></tr>';
   const toN=new Date(new Date(to).getTime()+86400000).toISOString().split('T')[0];
   let q=sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:false});
   if(pm)q=q.eq('payment_method',pm);
   const{data,error}=await q;
-  if(error){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="6">Error loading orders</td></tr>';return;}
+  if(error){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Error loading orders</td></tr>';return;}
   const list=data||[];
   S.orders=list;
-  const rev=list.reduce((s,i)=>s+parseFloat(i.total_amount),0),cnt=list.length;
+  const active=list.filter(i=>i.payment_status!=='refunded'&&i.payment_status!=='void');
+  const rev=active.reduce((s,i)=>s+parseFloat(i.total_amount),0),acnt=active.length;
   document.getElementById('or-rev').textContent=fmt(rev);
-  document.getElementById('or-cnt').textContent=cnt;
-  document.getElementById('or-avg').textContent=fmt(cnt?rev/cnt:0);
-  if(!list.length){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="6">No orders in this period</td></tr>';return;}
-  document.getElementById('ord-body').innerHTML=list.map((i,idx)=>`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="6"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${i.payment_method==='gcash'?'GCash':'Cash'})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`).join('');
+  document.getElementById('or-cnt').textContent=list.length;
+  document.getElementById('or-avg').textContent=fmt(acnt?rev/acnt:0);
+  if(!list.length){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">No orders in this period</td></tr>';return;}
+  document.getElementById('ord-body').innerHTML=list.map((i,idx)=>`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':'bgr'}">${i.payment_method==='gcash'?'GCash':'Cash'}</span></td><td onclick="event.stopPropagation();changeStatus('${i.id}','${i.payment_status||'completed'}')">${statusPill(i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></div></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="7"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${i.payment_method==='gcash'?'GCash':'Cash'})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`).join('');
+}
+
+function changeStatus(id,current){
+  const lm={completed:'Paid',refunded:'Refunded',void:'Void'};
+  const choices=Object.entries(lm).filter(([v])=>v!==current).map(([v,l])=>({v,l}));
+  document.getElementById('st-cur').textContent=`Current status: ${lm[current]||'Paid'}`;
+  document.getElementById('st-opts').innerHTML=choices.map(c=>`<button class="btn btn-o" style="justify-content:flex-start;" onclick="confirmStatus('${id}','${c.v}','${c.l}')">${c.l}</button>`).join('');
+  document.getElementById('stmod').classList.add('open');
+}
+async function confirmStatus(id,val,label){
+  if(!confirm(`Set order status to "${label}"?`))return;
+  document.getElementById('stmod').classList.remove('open');
+  const{error}=await sb.from('invoices').update({payment_status:val}).eq('id',id);
+  if(error){toast(`Error: ${error.message}`);return;}
+  toast(`Status updated to ${label}`);
+  loadOrders();
 }
 function togRow(idx){
   const row=document.getElementById(`exp-${idx}`);
@@ -883,11 +920,46 @@ function dlCSV(){
 async function viewRcp(id){
   const{data,error}=await sb.from('invoices').select('*,invoice_items(*)').eq('id',id).single();
   if(error||!data){toast('Could not load receipt');return;}
+  S.rcpData=data;
   const sn=S.cfg.storeName||'PoS 4 All';
   document.getElementById('rcp').innerHTML=`<div class="rh2"><div class="rl">${sn}</div>${S.cfg.address?`<div style="font-size:12px;color:var(--mu);">${S.cfg.address}</div>`:''}<div style="font-size:12px;color:var(--mu);margin-top:3px;">${fmtD(data.created_at)} · ${fmtT(data.created_at)}</div><div style="font-size:13px;font-weight:700;margin-top:4px;">${data.invoice_number}</div></div>${(data.invoice_items||[]).map(it=>`<div class="rrow"><span>${it.item_name} &times; ${it.quantity}</span><span>${fmt(it.line_total)}</span></div>`).join('')}<hr class="rdiv"><div class="rrow"><span style="color:var(--mu);">Subtotal</span><span>${fmt(data.subtotal)}</span></div><div class="rrow"><span style="color:var(--mu);">VAT (${Math.round(CFG.VAT*100)}%)</span><span>${fmt(data.vat_amount)}</span></div><hr class="rdiv"><div class="rrow bold"><span>TOTAL</span><span>${fmt(data.total_amount)}</span></div><div style="margin-top:9px;font-size:13px;color:var(--mu);">Payment: ${data.payment_method==='gcash'?'GCash':'Cash'}</div>`;
   document.getElementById('rmod').classList.add('open');
 }
-function closeRcp(){document.getElementById('rmod').classList.remove('open');}
+function closeRcp(){document.getElementById('rmod').classList.remove('open');S.rcpData=null;}
+
+function printRcp(){
+  if(!S.rcpData)return;
+  const d=S.rcpData,sn=S.cfg.storeName||'PoS 4 All';
+  const w=window.open('','_blank','width=420,height=640');
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:12px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:15px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:2px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:14px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center"><h2>${sn}</h2>${S.cfg.address?`<div>${S.cfg.address}</div>`:''}<div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row"><span>Subtotal</span><span>₱${parseFloat(d.subtotal).toFixed(2)}</span></div><div class="row"><span>VAT (${Math.round(CFG.VAT*100)}%)</span><span>₱${parseFloat(d.vat_amount).toFixed(2)}</span></div><div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div><div style="margin-top:8px;font-size:11px;">Payment: ${d.payment_method==='gcash'?'GCash':'Cash'}</div></body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+
+function downloadRcpPDF(){
+  if(!S.rcpData){toast('No receipt loaded');return;}
+  if(!window.jspdf){toast('PDF library not loaded');return;}
+  const{jsPDF}=window.jspdf;
+  const d=S.rcpData,sn=S.cfg.storeName||'PoS 4 All';
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  const cx=105,lm=55,rm=155;let y=20;
+  doc.setFontSize(16);doc.setFont(undefined,'bold');doc.text(sn,cx,y,{align:'center'});y+=7;
+  if(S.cfg.address){doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(S.cfg.address,cx,y,{align:'center'});y+=5;}
+  doc.setFontSize(9);doc.text(`${fmtD(d.created_at)} · ${fmtT(d.created_at)}`,cx,y,{align:'center'});y+=5;
+  doc.setFont(undefined,'bold');doc.text(d.invoice_number,cx,y,{align:'center'});y+=7;
+  doc.setDrawColor(180);doc.line(lm,y,rm,y);y+=5;
+  doc.setFont(undefined,'normal');doc.setFontSize(10);
+  (d.invoice_items||[]).forEach(it=>{doc.text(`${it.item_name} × ${it.quantity}`,lm,y);doc.text(`₱${parseFloat(it.line_total).toFixed(2)}`,rm,y,{align:'right'});y+=6;});
+  doc.line(lm,y,rm,y);y+=5;
+  doc.text('Subtotal',lm,y);doc.text(`₱${parseFloat(d.subtotal).toFixed(2)}`,rm,y,{align:'right'});y+=6;
+  doc.text(`VAT (${Math.round(CFG.VAT*100)}%)`,lm,y);doc.text(`₱${parseFloat(d.vat_amount).toFixed(2)}`,rm,y,{align:'right'});y+=5;
+  doc.line(lm,y,rm,y);y+=5;
+  doc.setFont(undefined,'bold');doc.setFontSize(12);
+  doc.text('TOTAL',lm,y);doc.text(`₱${parseFloat(d.total_amount).toFixed(2)}`,rm,y,{align:'right'});y+=7;
+  doc.setFont(undefined,'normal');doc.setFontSize(9);
+  doc.text(`Payment: ${d.payment_method==='gcash'?'GCash':'Cash'}`,lm,y);
+  doc.save(`receipt-${d.invoice_number}.pdf`);
+}
 
 // Settings
 function togVR(){document.getElementById('vr-row').style.display=document.getElementById('sv').checked?'flex':'none';}
@@ -910,8 +982,8 @@ function saveSt(){
 
 function cOpt(yf){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',maxTicksLimit:12}},y:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',callback:yf}}}};}
 
-['pmod','rmod','imod','mcmod'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();['pmod','rmod','imod','mcmod'].forEach(id=>document.getElementById(id).classList.remove('open'));}});
+['pmod','rmod','imod','mcmod','stmod'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();['pmod','rmod','imod','mcmod','stmod'].forEach(id=>document.getElementById(id).classList.remove('open'));}});
 
 function boot(){
   if(S.cfg.vatOn===false)CFG.VAT=0;else if(S.cfg.vatRate)CFG.VAT=S.cfg.vatRate/100;
