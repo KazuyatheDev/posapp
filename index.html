@@ -641,15 +641,15 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <div class="sg">
       <div class="sc"><div class="sl">Total Revenue</div><div class="sv" id="rp-rev">₱0.00</div></div>
-      <div class="sc"><div class="sl">Transactions</div><div class="sv" id="rp-cnt">0</div></div>
       <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="rp-exp">&#8369;0.00</div></div>
       <div class="sc"><div class="sl">Profit / Loss</div><div class="sv" id="rp-pl">&#8369;0.00</div><div class="sl" id="rp-pl-pct" style="font-size:12px;margin-top:2px;"></div></div>
     </div>
-    <!-- 1. Revenue by Day — full width -->
-    <div class="card" style="margin-bottom:13px;"><div class="card-t">Revenue by Day</div><div class="cw" style="height:220px;"><canvas id="rp-dc"></canvas></div></div>
-    <!-- 2. Order Status pills — full width -->
-    <div class="os-pills" id="rp-os"></div>
-    <!-- 3. Top Selling + Payment Method Summary -->
+    <!-- Row 1: Revenue by Day + Order Status chart -->
+    <div class="g2">
+      <div class="card"><div class="card-t">Revenue by Day</div><div class="cw"><canvas id="rp-dc"></canvas></div></div>
+      <div class="card"><div class="card-t">Order Status</div><div class="cw"><canvas id="rp-pm"></canvas></div></div>
+    </div>
+    <!-- Row 2: Top Selling + Payment Method Summary -->
     <div class="g2">
       <div class="card"><div class="card-t">Top Selling Items</div><div class="cw"><canvas id="rp-ti"></canvas></div></div>
       <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
@@ -1468,7 +1468,6 @@ async function loadReports(){
   const totalExp=expList.reduce((s,e)=>s+parseFloat(e.amount),0);
   const profit=rev-totalExp;
   document.getElementById('rp-rev').textContent=fmt(rev);
-  document.getElementById('rp-cnt').textContent=list.length;
   document.getElementById('rp-exp').textContent=fmt(totalExp);
   const plEl=document.getElementById('rp-pl');plEl.textContent=fmt(Math.abs(profit));plEl.style.color=profit>=0?'#16a34a':'#ef4444';
   const plPct=document.getElementById('rp-pl-pct');plPct.textContent=rev>0?`${profit>=0?'+':'-'}${Math.abs((profit/rev)*100).toFixed(1)}%`:'';plPct.style.color=profit>=0?'#16a34a':'#ef4444';
@@ -1489,17 +1488,25 @@ async function loadReports(){
     plugins:[{id:'barTopLabel',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets[0].data.forEach((v,i)=>{if(!v)return;const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='600 10px Inter,sans-serif';ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';const lbl=v>=1000?`₱${(v/1000).toFixed(1)}k`:`₱${v.toFixed(0)}`;ctx.fillText(lbl,b.x,b.y-3);ctx.restore();});}}]
   });
 
-  // 2. Order Status pills
+  // 2. Order Status doughnut chart
   const stPaid=list.filter(i=>i.payment_status==='completed');
   const stRef=list.filter(i=>i.payment_status==='refunded');
   const stVoid=list.filter(i=>i.payment_status==='void');
   const paidRev=stPaid.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const refRev=stRef.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const voidRev=stVoid.reduce((s,i)=>s+parseFloat(i.total_amount),0);
-  document.getElementById('rp-os').innerHTML=`
-    <div class="os-pill"><div class="os-pill-ico paid">✓</div><div class="os-pill-body"><div class="os-pill-lbl">Paid</div><div class="os-pill-val">${stPaid.length} orders</div><div class="os-pill-sub">${fmt(paidRev)}</div></div></div>
-    <div class="os-pill"><div class="os-pill-ico refund">↩</div><div class="os-pill-body"><div class="os-pill-lbl">Refunded</div><div class="os-pill-val">${stRef.length} orders</div><div class="os-pill-sub">${fmt(refRev)}</div></div></div>
-    <div class="os-pill"><div class="os-pill-ico void">✗</div><div class="os-pill-body"><div class="os-pill-lbl">Void</div><div class="os-pill-val">${stVoid.length} orders</div><div class="os-pill-sub">${fmt(voidRev)}</div></div></div>`;
+  if(S.charts.rpPM)S.charts.rpPM.destroy();
+  S.charts.rpPM=new Chart(document.getElementById('rp-pm'),{
+    type:'doughnut',
+    data:{
+      labels:['Paid','Refunded','Void'],
+      datasets:[{data:[stPaid.length,stRef.length,stVoid.length],backgroundColor:['#111827','#6b7280','#d1d5db'],borderWidth:0,hoverOffset:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{
+      legend:{position:'bottom',labels:{font:{family:'Inter',size:12},boxWidth:13,padding:16,color:'#374151'}},
+      tooltip:{callbacks:{label:ctx=>{const revs=[paidRev,refRev,voidRev];return` ${ctx.label}: ${ctx.raw} orders · ${fmt(revs[ctx.dataIndex])}`;}}
+    }}}
+  });
 
   // 3. Top Selling Items — black bars, qty + ₱ revenue at end of bar
   const itemMap={};const itemRevMap={};
