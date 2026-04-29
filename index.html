@@ -80,8 +80,8 @@ svg{display:block;}
 .pill{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--mu);font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit;}
 .pill:hover{background:var(--sf);color:var(--tx);}
 .pill.active{background:var(--acc);color:#fff;border-color:var(--acc);}
-.mscroll{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;}
-#mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;}
+.mscroll{flex:1;overflow-y:auto;padding:0 16px;-webkit-overflow-scrolling:touch;}
+#mg{display:flex;flex-direction:column;gap:0;}
 
 /* Menu Cards */
 .mc{background:var(--bg);border:1px solid var(--bd);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s;}
@@ -320,8 +320,71 @@ tbody tr.rh:hover{background:var(--sf);}
 #toast{position:fixed;bottom:24px;right:20px;background:var(--acc);color:#fff;padding:11px 16px;border-radius:9px;font-size:13px;font-weight:500;z-index:500;transform:translateY(56px);opacity:0;transition:all .25s;pointer-events:none;max-width:calc(100vw - 40px);}
 #toast.show{transform:translateY(0);opacity:1;}
 
+/* Login Page */
+#login-pg{position:fixed;inset:0;background:var(--sf);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px;}
+#login-pg.hidden{display:none;}
+.login-card{background:var(--bg);border:1px solid var(--bd);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.1);}
+.login-brand{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:28px;}
+.login-bi{width:48px;height:48px;background:#111827;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.login-bi svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.2;}
+.login-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;}
+.login-fg{margin-bottom:14px;}
+.login-lbl{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--tx);}
+.login-inp{width:100%;padding:10px 13px;border:1px solid var(--bd);border-radius:9px;font-family:inherit;font-size:15px;color:var(--tx);background:var(--bg);outline:none;transition:border .15s;}
+.login-inp:focus{border-color:var(--acc);}
+.login-btn{width:100%;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity .15s;}
+.login-btn:hover{opacity:.85;}
+.login-err{color:#ef4444;font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+
+/* Menu List View */
+.ml-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--bd);cursor:default;gap:12px;}
+.ml-row:last-child{border-bottom:none;}
+.ml-left{flex:1;min-width:0;}
+.ml-name{font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px;line-height:1.2;}
+.ml-cat{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;background:var(--sf);border:1px solid var(--bd);font-size:11px;font-weight:600;color:var(--mu);}
+.ml-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ml-price{font-size:18px;font-weight:700;color:var(--tx);}
+.ml-add{width:36px;height:36px;background:#111827;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;line-height:1;font-weight:400;transition:opacity .15s;flex-shrink:0;}
+.ml-add:hover{opacity:.8;}
+.ml-stepper{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ml-qb{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--bd);background:var(--bg);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--tx);font-family:inherit;flex-shrink:0;}
+.ml-qb:hover{background:var(--acc);color:#fff;border-color:var(--acc);}
+.ml-qty{font-size:16px;font-weight:700;min-width:22px;text-align:center;}
+.ml-oos{opacity:.45;}
+.ml-oos .ml-add{display:none;}
+.ml-inv-badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;margin-left:6px;}
+.ml-inv-low{background:#fff7ed;color:#c2410c;}
+.ml-inv-out{background:#fee2e2;color:#b91c1c;}
+
+/* Export dropdown */
+.exp-dd{position:relative;display:inline-block;}
+.exp-dd-btn{display:inline-flex;align-items:center;gap:6px;}
+.exp-dd-menu{position:absolute;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--bd);border-radius:9px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:50;min-width:130px;overflow:hidden;}
+.exp-dd-menu.hidden{display:none;}
+.exp-dd-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:background .12s;border:none;background:none;width:100%;text-align:left;font-family:inherit;color:var(--tx);}
+.exp-dd-item:hover{background:var(--sf);}
+.exp-dd-item svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+
+/* Orders summary cards */
+.ord-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin-bottom:16px;}
+.ord-card{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;}
+.ord-card-lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.ord-card-val{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+
+/* Pagination */
+.pg-ctrl{display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;flex-wrap:wrap;gap:8px;}
+.pg-info{font-size:12px;color:var(--mu);}
+.pg-btns{display:flex;gap:5px;}
+.pg-btn{padding:5px 11px;border:1px solid var(--bd);border-radius:7px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--tx);transition:all .12s;}
+.pg-btn:hover:not(:disabled){background:var(--sf);}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed;}
+.pg-btn.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+
+/* View Receipt column header */
+.vr-hd{font-size:11px;font-weight:700;color:var(--mu);padding:9px 13px;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+
 /* ═══ RESPONSIVE ═══ */
-@media (max-width:1024px){:root{--cart:270px;}#mg{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}}
+@media (max-width:1024px){:root{--cart:270px;}}
 
 @media (max-width:768px){
   #sb{position:fixed;left:calc(-1 * var(--sb));top:0;bottom:0;z-index:200;width:var(--sb)!important;transition:left .25s ease;box-shadow:4px 0 24px rgba(0,0,0,.12);}
@@ -338,7 +401,7 @@ tbody tr.rh:hover{background:var(--sf);}
   #pg-cashier{flex-direction:column;}
   .cm{overflow:hidden;}
   .mscroll{padding-bottom:80px;}
-  #mg{grid-template-columns:repeat(2,1fr);gap:10px;}
+  #mg{display:flex;flex-direction:column;gap:0;}
   .sg{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
   .pg-std{padding:16px;}
@@ -353,11 +416,28 @@ tbody tr.rh:hover{background:var(--sf);}
   .sinp{width:100%;}
   .frow{grid-template-columns:1fr;}
   .pm-wrap{width:calc(100vw - 40px);}
+  .ord-cards{grid-template-columns:1fr 1fr;}
+  .ml-name{font-size:16px;}
+  .ml-price{font-size:16px;}
 }
-@media (max-width:480px){.sg{grid-template-columns:1fr;}}
+@media (max-width:480px){.sg{grid-template-columns:1fr;}.ord-cards{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
+
+<!-- Login Page -->
+<div id="login-pg">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-bi"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="login-title">PoS 4 All</span>
+    </div>
+    <div class="login-fg"><label class="login-lbl">Username</label><input id="l-user" type="text" class="login-inp" placeholder="Enter username" autocomplete="username"></div>
+    <div class="login-fg"><label class="login-lbl">Password</label><input id="l-pass" type="password" class="login-inp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">Login</button>
+    <div class="login-err" id="l-err"></div>
+  </div>
+</div>
 
 <div id="ob">&#9888; <span id="qc">0</span> transaction(s) queued<button onclick="syncQ()">Sync Now</button></div>
 <div id="sbov" onclick="closeSB()"></div>
@@ -397,7 +477,13 @@ tbody tr.rh:hover{background:var(--sf);}
       <span class="ni-lbl">Expenses</span>
     </button>
   </nav>
-  <div class="s-bot"><div class="s-ver">v2.0 · PoS 4 All</div></div>
+  <div class="s-bot">
+    <button class="ni" data-tip="Logout" onclick="doLogout()" style="color:#ef4444;">
+      <span class="ni-ico"><svg viewBox="0 0 24 24" style="stroke:#ef4444;fill:none;stroke-width:1.75;"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+      <span class="ni-lbl">Logout</span>
+    </button>
+    <div class="s-ver">v2.0 · PoS 4 All</div>
+  </div>
 </div>
 
 <!-- Content -->
@@ -418,13 +504,6 @@ tbody tr.rh:hover{background:var(--sf);}
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="ms" type="text" placeholder="Search menu…" oninput="fmenu()">
       </div>
-      <select id="msort" class="dsel" onchange="applyF()" style="font-size:12px;padding:7px 10px;">
-        <option value="">Sort: Default</option>
-        <option value="cat">Category A–Z</option>
-        <option value="pa">Price: Low → High</option>
-        <option value="pd">Price: High → Low</option>
-        <option value="name">Name A–Z</option>
-      </select>
     </div>
     <div class="cbar"><div id="pills" class="pills"></div></div>
     <div class="mscroll"><div id="mg"><div class="empty">Loading menu…</div></div></div>
@@ -468,6 +547,16 @@ tbody tr.rh:hover{background:var(--sf);}
   <div class="pg-std">
     <div class="ph">
       <h1 class="pt">Orders</h1>
+      <div class="exp-dd" id="ord-exp-dd">
+        <button class="btn btn-o exp-dd-btn" onclick="toggleDD('ord-exp-dd')">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+          <svg viewBox="0 0 24 24" style="width:11px;height:11px;"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="exp-dd-menu hidden" id="ord-exp-menu">
+          <button class="exp-dd-item" onclick="dlOrdersCSV();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download CSV</button>
+          <button class="exp-dd-item" onclick="dlOrdersPDF();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>
+        </div>
+      </div>
     </div>
     <div class="rc">
       <div class="dr">
@@ -477,7 +566,17 @@ tbody tr.rh:hover{background:var(--sf);}
         <select id="ost" class="dsel" onchange="loadOrders()"><option value="">All Statuses</option><option value="completed">Paid</option><option value="refunded">Refunded</option><option value="void">Void</option></select>
       </div>
     </div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Total</th><th style="width:64px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
+    <div class="ord-cards">
+      <div class="ord-card"><div class="ord-card-lbl">Total Amount Paid</div><div class="ord-card-val" id="ord-paid">₱0.00</div></div>
+      <div class="ord-card"><div class="ord-card-lbl">Total Refund / Void</div><div class="ord-card-val" id="ord-refvoid">₱0.00</div></div>
+    </div>
+    <div class="card">
+      <div class="tw"><table><thead><tr><th style="width:40px;">View Receipt</th><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Reason</th><th>Total</th><th style="width:36px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="9">Loading…</td></tr></tbody></table></div>
+      <div class="pg-ctrl" id="ord-pg-ctrl" style="display:none;padding:12px 0 0;">
+        <span class="pg-info" id="ord-pg-info"></span>
+        <div class="pg-btns" id="ord-pg-btns"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -492,7 +591,18 @@ tbody tr.rh:hover{background:var(--sf);}
 <!-- REPORTS -->
 <div id="pg-reports" class="pg">
   <div class="pg-std">
-    <div class="ph"><h1 class="pt">Reports</h1><div style="display:flex;gap:8px;"><button class="btn btn-o" onclick="dlReportCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV</button><button class="btn btn-k" onclick="dlReportPDF()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button></div></div>
+    <div class="ph"><h1 class="pt">Reports</h1>
+      <div class="exp-dd" id="rpt-exp-dd">
+        <button class="btn btn-k exp-dd-btn" onclick="toggleDD('rpt-exp-dd')">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+          <svg viewBox="0 0 24 24" style="width:11px;height:11px;"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="exp-dd-menu hidden" id="rpt-exp-menu">
+          <button class="exp-dd-item" onclick="dlReportCSV();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download CSV</button>
+          <button class="exp-dd-item" onclick="dlReportPDF();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>
+        </div>
+      </div>
+    </div>
     <div class="rc">
       <div class="dr">
         <span class="dl">From</span><input id="rf" type="date" class="di" onchange="loadReports()">
@@ -508,7 +618,6 @@ tbody tr.rh:hover{background:var(--sf);}
     <div class="sg">
       <div class="sc"><div class="sl">Total Revenue</div><div class="sv" id="rp-rev">₱0.00</div></div>
       <div class="sc"><div class="sl">Transactions</div><div class="sv" id="rp-cnt">0</div></div>
-      <div class="sc"><div class="sl">Avg / Transaction</div><div class="sv" id="rp-avg">₱0.00</div></div>
       <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="rp-exp">&#8369;0.00</div></div>
       <div class="sc"><div class="sl">Profit / Loss</div><div class="sv" id="rp-pl">&#8369;0.00</div><div class="sl" id="rp-pl-pct" style="font-size:12px;margin-top:2px;"></div></div>
     </div>
@@ -804,28 +913,34 @@ function catF(c,el){S.cat=c;document.querySelectorAll('.pill').forEach(p=>p.clas
 function fmenu(){applyF();}
 function applyF(){
   const q=document.getElementById('ms').value.toLowerCase();
-  const sort=document.getElementById('msort').value;
   let it=S.menu;
   if(S.cat!=='All')it=it.filter(i=>i.category===S.cat);
   if(q)it=it.filter(i=>i.name.toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q));
-  if(sort==='cat')it=[...it].sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.name.localeCompare(b.name));
-  else if(sort==='pa')it=[...it].sort((a,b)=>a.price-b.price);
-  else if(sort==='pd')it=[...it].sort((a,b)=>b.price-a.price);
-  else if(sort==='name')it=[...it].sort((a,b)=>a.name.localeCompare(b.name));
   renderMenu(it);
 }
 function renderMenu(items){
   const g=document.getElementById('mg');
-  if(!items.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">No items found</div>';return;}
+  if(!items.length){g.innerHTML='<div class="empty">No items found</div>';return;}
   g.innerHTML=items.map(i=>{
     const hasInv=i.inv_qty!==null&&i.inv_qty!==undefined;
     const oos=hasInv&&i.inv_qty<=0;
     const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
-    const badge=oos?'<span class="inv-out">Out of stock</span>':low?`<span class="inv-low">${i.inv_qty} left</span>`:'';
     const hasTypes=i.product_types&&i.product_types.length>0;
     const priceLabel=hasTypes?`from ${fmt(Math.min(...i.product_types.map(t=>t.price)))}`:fmt(i.price);
-    const clickFn=oos?`toast('This item is out of stock')`:`addC('${i.id}')`;
-    return`<div class="mc${oos?' oos':''}" onclick="${clickFn}"><div class="mci">${imgH(i)}<button class="mc-add" onclick="event.stopPropagation();${clickFn}">+</button>${badge}</div><div class="mcb"><div class="mc-n">${i.name}</div>${i.category?`<div class="mc-c">${i.category}</div>`:''}<div class="mc-p">${priceLabel}</div></div></div>`;
+    const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
+    const cartQty=cartItem?cartItem.quantity:0;
+    let rightHtml;
+    if(oos){
+      rightHtml=`<span class="ml-inv-badge ml-inv-out">Out of stock</span>`;
+    } else if(hasTypes){
+      rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;
+    } else if(cartQty>0){
+      rightHtml=`<div class="ml-stepper"><button class="ml-qb" onclick="qch('${i.id}',-1)">−</button><span class="ml-qty">${cartQty}</span><button class="ml-qb" onclick="qch('${i.id}',1)">+</button></div>`;
+    } else {
+      rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;
+    }
+    const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
+    return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}</div><div class="ml-right"><span class="ml-price">${priceLabel}</span>${rightHtml}</div></div>`;
   }).join('');
 }
 
@@ -883,6 +998,7 @@ function renderCart(){
   document.getElementById('mcs').textContent=fmt(sub);
   document.getElementById('mct').textContent=fmt(sub);
   document.getElementById('mpb').disabled=empty;
+  if(S.sec==='cashier')applyF();
 }
 
 function openMC(){document.getElementById('mcmod').classList.add('open');}
@@ -1147,27 +1263,95 @@ async function changeStatus(sel){
 }
 
 // Orders
+const ORD_PER_PAGE=10;
+let ordPage=1;
 async function loadOrders(){
+  ordPage=1;
   const from=document.getElementById('of').value,to=document.getElementById('ot2').value,pm=document.getElementById('opm').value,st=document.getElementById('ost').value;
   if(!from||!to)return;
-  document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Loading…</td></tr>';
+  document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="9">Loading…</td></tr>';
   const toN=new Date(new Date(to).getTime()+86400000).toISOString().split('T')[0];
   let q=sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:false});
   if(pm)q=q.eq('payment_method',pm);
   if(st)q=q.eq('payment_status',st);
   const{data,error}=await q;
-  if(error){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">Error loading orders</td></tr>';return;}
-  const list=data||[];
-  S.orders=list;
-  if(!list.length){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="7">No orders in this period</td></tr>';return;}
-  document.getElementById('ord-body').innerHTML=list.map((i,idx)=>`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td><span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash'}</span></td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></div></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="7"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash'})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`).join('');
+  if(error){document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="9">Error loading orders</td></tr>';return;}
+  S.orders=data||[];
+  const paid=S.orders.filter(i=>i.payment_status==='completed').reduce((s,i)=>s+parseFloat(i.total_amount),0);
+  const rv=S.orders.filter(i=>i.payment_status==='refunded'||i.payment_status==='void').reduce((s,i)=>s+parseFloat(i.total_amount),0);
+  document.getElementById('ord-paid').textContent=fmt(paid);
+  document.getElementById('ord-refvoid').textContent=fmt(rv);
+  renderOrdersPage();
 }
+function renderOrdersPage(){
+  const list=S.orders;
+  if(!list.length){
+    document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="9">No orders in this period</td></tr>';
+    document.getElementById('ord-pg-ctrl').style.display='none';
+    return;
+  }
+  const total=list.length,pages=Math.ceil(total/ORD_PER_PAGE);
+  if(ordPage>pages)ordPage=pages;
+  const slice=list.slice((ordPage-1)*ORD_PER_PAGE,ordPage*ORD_PER_PAGE);
+  const offset=(ordPage-1)*ORD_PER_PAGE;
+  document.getElementById('ord-body').innerHTML=slice.map((i,j)=>{
+    const idx=offset+j;
+    const pmLabel=i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash';
+    const pmBadge=`<span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${pmLabel}</span>`;
+    const reasonCell=i.status_reason?`<span style="font-size:12px;color:var(--mu);">${i.status_reason}</span>`:`<span style="color:var(--bd);">—</span>`;
+    return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td>${reasonCell}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="9"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`;
+  }).join('');
+  const ctrl=document.getElementById('ord-pg-ctrl');
+  if(total>ORD_PER_PAGE){
+    ctrl.style.display='flex';
+    document.getElementById('ord-pg-info').textContent=`${(ordPage-1)*ORD_PER_PAGE+1}–${Math.min(ordPage*ORD_PER_PAGE,total)} of ${total}`;
+    let btns=`<button class="pg-btn" ${ordPage===1?'disabled':''} onclick="ordGo(${ordPage-1})">&#8249;</button>`;
+    for(let p=1;p<=pages;p++){if(pages<=7||p===1||p===pages||Math.abs(p-ordPage)<=1){btns+=`<button class="pg-btn${p===ordPage?' active':''}" onclick="ordGo(${p})">${p}</button>`;}else if(Math.abs(p-ordPage)===2){btns+=`<span style="padding:5px 4px;font-size:12px;color:var(--mu);">…</span>`;}}
+    btns+=`<button class="pg-btn" ${ordPage===pages?'disabled':''} onclick="ordGo(${ordPage+1})">&#8250;</button>`;
+    document.getElementById('ord-pg-btns').innerHTML=btns;
+  } else {
+    ctrl.style.display='none';
+  }
+}
+function ordGo(p){ordPage=p;renderOrdersPage();}
 function togRow(idx){
   const row=document.getElementById(`exp-${idx}`);
   const chev=document.getElementById(`chev-${idx}`);
   const open=row.style.display==='none';
   row.style.display=open?'table-row':'none';
   chev.style.transform=open?'rotate(90deg)':'rotate(0deg)';
+}
+async function dlOrdersCSV(){
+  const list=S.orders||[];
+  if(!list.length){toast('No orders to export');return;}
+  const rows=[['View Receipt','Invoice #','Date & Time','Items','Payment','Status','Reason','Total (PHP)']];
+  list.forEach(i=>rows.push(['',i.invoice_number,fmtDT(i.created_at),(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash',i.payment_status,i.status_reason||'',parseFloat(i.total_amount).toFixed(2)]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);a.download=`orders-export.csv`;a.click();
+  toast('CSV exported');
+}
+async function dlOrdersPDF(){
+  if(!window.jspdf){toast('PDF library not loaded');return;}
+  const list=S.orders||[];
+  if(!list.length){toast('No orders to export');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'landscape'});
+  const st=getStore();let y=14;
+  doc.setFontSize(14);doc.setFont(undefined,'bold');doc.text(st.name+' — Orders Export',14,y);y+=8;
+  doc.setFontSize(9);doc.setFont(undefined,'normal');
+  const cols=['Invoice #','Date & Time','Items','Payment','Status','Reason','Total'];
+  const cw=[38,38,18,28,22,50,24];let x=14;
+  cols.forEach((c,j)=>{doc.setFont(undefined,'bold');doc.text(c,x,y);x+=cw[j];});
+  doc.setFont(undefined,'normal');y+=6;doc.setDrawColor(200);doc.line(14,y,283,y);y+=4;
+  list.forEach(i=>{
+    if(y>190){doc.addPage();y=14;}
+    x=14;
+    const row=[i.invoice_number,fmtDT(i.created_at),String((i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Xfer':'Cash',i.payment_status,i.status_reason||'—',`₱${parseFloat(i.total_amount).toFixed(2)}`];
+    row.forEach((v,j)=>{doc.text(String(v).substring(0,28),x,y);x+=cw[j];});
+    y+=6;
+  });
+  doc.save('orders-export.pdf');
+  toast('PDF exported');
 }
 
 
@@ -1243,7 +1427,6 @@ async function loadReports(){
   const profit=rev-totalExp;
   document.getElementById('rp-rev').textContent=fmt(rev);
   document.getElementById('rp-cnt').textContent=list.length;
-  document.getElementById('rp-avg').textContent=fmt(acnt?rev/acnt:0);
   document.getElementById('rp-exp').textContent=fmt(totalExp);
   const plEl=document.getElementById('rp-pl');plEl.textContent=fmt(Math.abs(profit));plEl.style.color=profit>=0?'#16a34a':'#ef4444';
   const plPct=document.getElementById('rp-pl-pct');plPct.textContent=rev>0?`${profit>=0?'+':'-'}${Math.abs((profit/rev)*100).toFixed(1)}%`:'';plPct.style.color=profit>=0?'#16a34a':'#ef4444';
@@ -1397,6 +1580,38 @@ function cOpt(yf){return{responsive:true,maintainAspectRatio:false,plugins:{lege
 ['pmod','rmod','imod','mcmod','tpmod','expmod'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();closeTP();closeExpModal();['pmod','rmod','imod','mcmod','tpmod','expmod'].forEach(id=>document.getElementById(id).classList.remove('open'));}});
 
+// Auth
+const AUTH_KEY='pos4all_auth';
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if(u==='Admin'&&p==='admin123'){
+    sessionStorage.setItem(AUTH_KEY,'1');
+    document.getElementById('login-pg').classList.add('hidden');
+    boot();
+  } else {
+    document.getElementById('l-err').textContent='Invalid username or password';
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem(AUTH_KEY);
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  document.getElementById('l-err').textContent='';
+  document.getElementById('login-pg').classList.remove('hidden');
+  closeSB();
+}
+
+// Dropdown helpers
+function toggleDD(wrapperId){
+  const menu=document.getElementById(wrapperId).querySelector('.exp-dd-menu');
+  const isHidden=menu.classList.contains('hidden');
+  closeAllDD();
+  if(isHidden)menu.classList.remove('hidden');
+}
+function closeAllDD(){document.querySelectorAll('.exp-dd-menu').forEach(m=>m.classList.add('hidden'));}
+document.addEventListener('click',e=>{if(!e.target.closest('.exp-dd'))closeAllDD();});
+
 function boot(){
   const now=today(),wk=new Date(new Date().getTime()-7*86400000).toISOString().split('T')[0];
   document.getElementById('of').value=wk;document.getElementById('ot2').value=now;
@@ -1405,7 +1620,11 @@ function boot(){
   document.getElementById('dd').textContent=fmtD(new Date().toISOString());
   setupConn();loadMenu();renderCart();loadDash();
 }
-boot();
+
+if(sessionStorage.getItem(AUTH_KEY)==='1'){
+  document.getElementById('login-pg').classList.add('hidden');
+  boot();
+}
 </script>
 </body>
 </html>
