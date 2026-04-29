@@ -355,6 +355,9 @@ tbody tr.rh:hover{background:var(--sf);}
 .ml-inv-badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;margin-left:6px;}
 .ml-inv-low{background:#fff7ed;color:#c2410c;}
 .ml-inv-out{background:#fee2e2;color:#b91c1c;}
+.ml-types{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.ml-type-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:#f3f4f6;border:1px solid var(--bd);font-size:11px;color:#374151;font-weight:500;}
+.ml-type-price{font-weight:700;color:var(--tx);}
 
 /* Export dropdown */
 .exp-dd{position:relative;display:inline-block;}
@@ -629,6 +632,10 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="card"><div class="card-t">Top Selling Items</div><div class="cw"><canvas id="rp-ti"></canvas></div></div>
       <div class="card"><div class="card-t">Revenue vs Expenses</div><div class="cw"><canvas id="rp-revexp"></canvas></div></div>
     </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">Revenue by Payment Method</div><div class="cw"><canvas id="rp-pm-rev"></canvas></div></div>
+      <div class="card"><div class="card-t">Transactions by Payment Method</div><div class="cw"><canvas id="rp-pm-cnt"></canvas></div></div>
+    </div>
   </div>
 </div>
 
@@ -658,7 +665,7 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="exp-tot">&#8369;0.00</div></div>
       <div class="sc"><div class="sl">Count</div><div class="sv" id="exp-cnt">0</div></div>
     </div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="width:70px;"></th></tr></thead><tbody id="exp-body"><tr class="lr"><td colspan="5">Loading&#8230;</td></tr></tbody></table></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="width:110px;"></th></tr></thead><tbody id="exp-body"><tr class="lr"><td colspan="5">Loading&#8230;</td></tr></tbody></table></div></div>
   </div>
 </div>
 
@@ -732,7 +739,7 @@ tbody tr.rh:hover{background:var(--sf);}
 <!-- Expense Modal -->
 <div id="expmod" class="ov">
   <div class="modal" style="width:min(440px,calc(100vw - 32px));">
-    <div class="mhd"><h2 class="mtitle">Add Expense</h2><button class="mcl" onclick="closeExpModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="mhd"><h2 class="mtitle" id="exp-modal-title">Add Expense</h2><button class="mcl" onclick="closeExpModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <form onsubmit="saveExpense(event)">
       <div class="fg"><label class="fl">Category *</label>
         <select id="ecat-inp" class="fi" required onchange="togExpOther(this.value)">
@@ -831,7 +838,7 @@ const sb=supabase.createClient(CFG.URL,CFG.KEY);
 const S={
   cart:JSON.parse(localStorage.getItem('cp_cart')||'[]').map(i=>({...i,cartId:i.cartId||i.id})),
   menu:[],inv:[],orders:[],expenses:[],
-  sec:'cashier',pm:null,eid:null,cat:'All',
+  sec:'cashier',pm:null,eid:null,eid_exp:null,cat:'All',
   queue:JSON.parse(localStorage.getItem('cp_queue')||'[]'),
   charts:{},
   cfg:JSON.parse(localStorage.getItem('cp_cfg')||'{}'),
@@ -926,7 +933,7 @@ function renderMenu(items){
     const oos=hasInv&&i.inv_qty<=0;
     const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
     const hasTypes=i.product_types&&i.product_types.length>0;
-    const priceLabel=hasTypes?`from ${fmt(Math.min(...i.product_types.map(t=>t.price)))}`:fmt(i.price);
+    const priceLabel=fmt(i.price);
     const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
     const cartQty=cartItem?cartItem.quantity:0;
     let rightHtml;
@@ -940,7 +947,8 @@ function renderMenu(items){
       rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;
     }
     const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
-    return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}</div><div class="ml-right"><span class="ml-price">${priceLabel}</span>${rightHtml}</div></div>`;
+    const typePills=hasTypes?`<div class="ml-types">${i.product_types.map(t=>`<span class="ml-type-pill">${t.name} <span class="ml-type-price">${fmt(t.price)}</span></span>`).join('')}</div>`:'';
+    return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}${typePills}</div><div class="ml-right">${!hasTypes?`<span class="ml-price">${priceLabel}</span>`:''} ${rightHtml}</div></div>`;
   }).join('');
 }
 
@@ -978,7 +986,7 @@ function saveCart(){localStorage.setItem('cp_cart',JSON.stringify(S.cart));}
 
 function cartItemsHTML(){
   if(!S.cart.length)return`<div class="ce">${CART_SVG}<span style="font-size:14px;font-weight:500;">Cart is empty</span><span style="font-size:12px;">Tap items to add</span></div>`;
-  return S.cart.map(i=>`<div class="cit"><div class="cth">${thmH(i)}</div><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmt(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.cartId}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.cartId}',1)">+</button></div><div class="cit-t">${fmt(i.price*i.quantity)}</div></div>`).join('');
+  return S.cart.map(i=>`<div class="cit"><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmt(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.cartId}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.cartId}',1)">+</button></div><div class="cit-t">${fmt(i.price*i.quantity)}</div></div>`).join('');
 }
 
 function renderCart(){
@@ -1469,6 +1477,20 @@ async function loadReports(){
   if(top8.length){S.charts.rpTI=new Chart(document.getElementById('rp-ti'),{type:'bar',data:{labels:top8.map(([n])=>n),datasets:[{label:'Qty Sold',data:top8.map(([,q])=>q),backgroundColor:'rgba(17,24,39,.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280'}},y:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#6b7280'}}}}});}
   if(S.charts.rpRevExp)S.charts.rpRevExp.destroy();
   S.charts.rpRevExp=new Chart(document.getElementById('rp-revexp'),{type:'pie',data:{labels:['Revenue','Expenses'],datasets:[{data:[rev,totalExp],backgroundColor:['#111827','#d1d5db'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:12},boxWidth:14,padding:14}}}}});
+  // Payment method breakdown
+  const pmLabels=['GCash','Cash','Bank Transfer'];
+  const pmKeys=['gcash','cash','bank_transfer'];
+  const pmColors=['#4f46e5','#111827','#0891b2'];
+  const pmRevMap={gcash:0,cash:0,bank_transfer:0};
+  const pmCntMap={gcash:0,cash:0,bank_transfer:0};
+  active.forEach(i=>{const k=i.payment_method in pmRevMap?i.payment_method:'cash';pmRevMap[k]+=parseFloat(i.total_amount);pmCntMap[k]++;});
+  const pmRevVals=pmKeys.map(k=>pmRevMap[k]);
+  const pmCntVals=pmKeys.map(k=>pmCntMap[k]);
+  const doughnutOpts=(tt)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:11},boxWidth:12}},tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${tt==='₱'?fmt(ctx.raw):ctx.raw}`}}}});
+  if(S.charts.rpPMRev)S.charts.rpPMRev.destroy();
+  S.charts.rpPMRev=new Chart(document.getElementById('rp-pm-rev'),{type:'doughnut',data:{labels:pmLabels,datasets:[{data:pmRevVals,backgroundColor:pmColors,borderWidth:0}]},options:doughnutOpts('₱')});
+  if(S.charts.rpPMCnt)S.charts.rpPMCnt.destroy();
+  S.charts.rpPMCnt=new Chart(document.getElementById('rp-pm-cnt'),{type:'doughnut',data:{labels:pmLabels,datasets:[{data:pmCntVals,backgroundColor:pmColors,borderWidth:0}]},options:doughnutOpts('#')});
 }
 function setRpQuick(v){
   if(!v)return;
@@ -1497,7 +1519,7 @@ async function loadExpenses(){
   document.getElementById('exp-tot').textContent=fmt(tot);
   document.getElementById('exp-cnt').textContent=S.expenses.length;
   if(!S.expenses.length){document.getElementById('exp-body').innerHTML='<tr class="lr"><td colspan="5">No expenses in this period</td></tr>';return;}
-  document.getElementById('exp-body').innerHTML=S.expenses.map(e=>`<tr class="rh"><td style="font-size:12px;">${e.expense_date}</td><td><span class="bdg bcat">${e.category}</span></td><td style="color:var(--mu);font-size:13px;">${e.description||'—'}</td><td style="font-weight:700;">${fmt(e.amount)}</td><td><button class="btn btn-o btn-s btn-d" onclick="delExpense('${e.id}')">Delete</button></td></tr>`).join('');
+  document.getElementById('exp-body').innerHTML=S.expenses.map(e=>`<tr class="rh"><td style="font-size:12px;">${e.expense_date}</td><td><span class="bdg bcat">${e.category}</span></td><td style="color:var(--mu);font-size:13px;">${e.description||'—'}</td><td style="font-weight:700;">${fmt(e.amount)}</td><td><div style="display:flex;gap:5px;"><button class="btn btn-o btn-s" onclick="editExpense('${e.id}')">Edit</button><button class="btn btn-o btn-s btn-d" onclick="delExpense('${e.id}')">Delete</button></div></td></tr>`).join('');
 }
 async function delExpense(id){
   if(!confirm('Delete this expense?'))return;
@@ -1506,6 +1528,8 @@ async function delExpense(id){
   toast('Expense deleted');loadExpenses();
 }
 function openExpModal(){
+  S.eid_exp=null;
+  document.getElementById('exp-modal-title').textContent='Add Expense';
   document.getElementById('ecat-inp').value='';
   document.getElementById('exp-other').value='';
   document.getElementById('exp-desc').value='';
@@ -1514,7 +1538,21 @@ function openExpModal(){
   document.getElementById('exp-other-row').style.display='none';
   document.getElementById('expmod').classList.add('open');
 }
-function closeExpModal(){document.getElementById('expmod').classList.remove('open');}
+function closeExpModal(){document.getElementById('expmod').classList.remove('open');S.eid_exp=null;}
+function editExpense(id){
+  const e=S.expenses.find(x=>x.id===id);if(!e)return;
+  S.eid_exp=id;
+  document.getElementById('exp-modal-title').textContent='Edit Expense';
+  let cat=e.category;
+  const isOther=cat.startsWith('Others:');
+  document.getElementById('ecat-inp').value=isOther?'Others':cat;
+  document.getElementById('exp-other').value=isOther?cat.replace('Others:','').trim():'';
+  document.getElementById('exp-other-row').style.display=isOther?'block':'none';
+  document.getElementById('exp-desc').value=e.description||'';
+  document.getElementById('exp-amt').value=e.amount;
+  document.getElementById('exp-date').value=e.expense_date;
+  document.getElementById('expmod').classList.add('open');
+}
 function togExpOther(v){document.getElementById('exp-other-row').style.display=v==='Others'?'block':'none';if(v==='Others')setTimeout(()=>document.getElementById('exp-other').focus(),50);}
 async function saveExpense(e){
   e.preventDefault();
@@ -1524,9 +1562,16 @@ async function saveExpense(e){
   const amount=parseFloat(document.getElementById('exp-amt').value);
   const expense_date=document.getElementById('exp-date').value;
   if(!cat||!amount||!expense_date)return;
-  const{error}=await sb.from('expenses').insert([{category:cat,description:desc,amount,expense_date}]);
-  if(error){toast('Error: '+error.message);return;}
-  toast('Expense saved');closeExpModal();loadExpenses();
+  if(S.eid_exp){
+    const{error}=await sb.from('expenses').update({category:cat,description:desc,amount,expense_date}).eq('id',S.eid_exp);
+    if(error){toast('Error: '+error.message);return;}
+    toast('Expense updated');
+  } else {
+    const{error}=await sb.from('expenses').insert([{category:cat,description:desc,amount,expense_date}]);
+    if(error){toast('Error: '+error.message);return;}
+    toast('Expense saved');
+  }
+  closeExpModal();loadExpenses();
 }
 
 // Report Export
