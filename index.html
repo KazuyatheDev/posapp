@@ -1768,9 +1768,9 @@ async function dlReportPDF(){
   doc.setFont(undefined,'normal');doc.setFontSize(10);
   [[`Total Revenue (${active.length} completed transactions)`,fmt(rev)],['Total Expenses',fmt(totalExp)],['Profit / Loss',`${profit>=0?'':'(-) '}${fmt(Math.abs(profit))}`]].forEach(([k,v])=>{doc.text(k,lm,y);doc.text(v,rm,y,{align:'right'});y+=6;});
   doc.line(lm,y,rm,y);y+=6;
-  const im={};active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{im[it.item_name]=(im[it.item_name]||0)+it.quantity;}));
-  const top5=Object.entries(im).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  if(top5.length){doc.setFont(undefined,'bold');doc.text('Top Selling Items',lm,y);y+=6;doc.setFont(undefined,'normal');top5.forEach(([n,q])=>{doc.text(n,lm,y);doc.text(`${q} sold`,rm,y,{align:'right'});y+=5;});doc.line(lm,y,rm,y);y+=6;}
+  const im={};const irm={};active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{im[it.item_name]=(im[it.item_name]||0)+it.quantity;irm[it.item_name]=(irm[it.item_name]||0)+parseFloat(it.line_total);}));
+  const allSold=Object.entries(im).sort((a,b)=>b[1]-a[1]);
+  if(allSold.length){if(y>170){doc.addPage();y=14;}doc.setFont(undefined,'bold');doc.text('Top Selling Items',lm,y);y+=6;doc.setFont(undefined,'normal');allSold.forEach(([n,q])=>{if(y>190){doc.addPage();y=14;}doc.text(n.substring(0,40),lm,y);doc.text(`${q} sold`,cx,y,{align:'right'});doc.text(fmt(irm[n]||0),rm,y,{align:'right'});y+=5;});doc.line(lm,y,rm,y);y+=6;}
   if(expList.length){const catTot={};expList.forEach(e=>{catTot[e.category]=(catTot[e.category]||0)+parseFloat(e.amount);});doc.setFont(undefined,'bold');doc.text('Expenses by Category',lm,y);y+=6;doc.setFont(undefined,'normal');Object.entries(catTot).sort((a,b)=>b[1]-a[1]).forEach(([c,a])=>{doc.text(c,lm,y);doc.text(fmt(a),rm,y,{align:'right'});y+=5;});}
   doc.save(`report-${from}-to-${to}.pdf`);
 }
