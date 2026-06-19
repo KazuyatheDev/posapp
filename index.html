@@ -1432,6 +1432,11 @@ async function dlOrdersCSV(){
   rows.push(['Total Amount Paid',paid.toFixed(2)]);
   rows.push(['Total Refund / Void',rv.toFixed(2)]);
   rows.push(['Total Transactions',list.length]);
+  rows.push([]);
+  rows.push(['--- ITEMS SOLD BREAKDOWN ---']);
+  rows.push(['Product Name','Quantity Sold','Unit Price (PHP)','Total Revenue (PHP)']);
+  const bkd={};list.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{if(!bkd[it.item_name])bkd[it.item_name]={qty:0,rev:0};bkd[it.item_name].qty+=it.quantity;bkd[it.item_name].rev+=parseFloat(it.line_total);}));
+  Object.entries(bkd).sort((a,b)=>b[1].qty-a[1].qty).forEach(([name,{qty,rev}])=>rows.push([name,qty,(rev/qty).toFixed(2),rev.toFixed(2)]));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);a.download=`orders-export.csv`;a.click();
   toast('CSV exported');
@@ -1464,7 +1469,23 @@ async function dlOrdersPDF(){
   doc.setFont(undefined,'normal');doc.setFontSize(9);
   doc.text(`Total Transactions: ${list.length}`,14,y);y+=5;
   doc.text(`Total Amount Paid: ₱${paid.toFixed(2)}`,14,y);y+=5;
-  doc.text(`Total Refund / Void: ₱${rv.toFixed(2)}`,14,y);
+  doc.text(`Total Refund / Void: ₱${rv.toFixed(2)}`,14,y);y+=8;
+  const bkd2={};list.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{if(!bkd2[it.item_name])bkd2[it.item_name]={qty:0,rev:0};bkd2[it.item_name].qty+=it.quantity;bkd2[it.item_name].rev+=parseFloat(it.line_total);}));
+  const bkdRows=Object.entries(bkd2).sort((a,b)=>b[1].qty-a[1].qty);
+  if(bkdRows.length){
+    if(y>170){doc.addPage();y=14;}
+    doc.setFont(undefined,'bold');doc.setFontSize(10);doc.text('Items Sold Breakdown',14,y);y+=6;
+    doc.setFontSize(9);
+    const bCols=['Product Name','Qty Sold','Unit Price','Total Revenue'];const bCw=[120,22,32,36];let bx=14;
+    bCols.forEach((c,j)=>{doc.text(c,bx,y);bx+=bCw[j];});y+=4;doc.setDrawColor(200);doc.line(14,y,283,y);y+=4;
+    doc.setFont(undefined,'normal');
+    bkdRows.forEach(([name,{qty,rev}])=>{
+      if(y>190){doc.addPage();y=14;}
+      bx=14;
+      [name.substring(0,38),String(qty),`₱${(rev/qty).toFixed(2)}`,`₱${rev.toFixed(2)}`].forEach((v,j)=>{doc.text(v,bx,y);bx+=bCw[j];});
+      y+=5;
+    });
+  }
   doc.save('orders-export.pdf');
   toast('PDF exported');
 }
