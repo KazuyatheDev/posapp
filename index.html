@@ -363,6 +363,31 @@ tbody tr.rh:hover{background:var(--sf);}
 .ml-types{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
 .ml-type-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:#f3f4f6;border:1px solid var(--bd);font-size:11px;color:#374151;font-weight:500;}
 .ml-type-price{font-weight:700;color:var(--tx);}
+/* View toggle */
+.vt-wrap{display:flex;gap:4px;flex-shrink:0;}
+.vtb{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--bd);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.vtb svg{width:16px;height:16px;stroke:var(--mu);fill:none;stroke-width:2;}
+.vtb.active{background:#111827;border-color:#111827;}
+.vtb.active svg{stroke:#fff;}
+/* Card grid */
+#mg.mc-grid{display:grid;flex-direction:unset;gap:10px;grid-template-columns:repeat(2,1fr);padding:16px 0;}
+@media(min-width:700px){#mg.mc-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1100px){#mg.mc-grid{grid-template-columns:repeat(4,1fr);}}
+.mc-card{border:1.5px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;transition:border-color .15s;}
+.mc-card:hover{border-color:#9ca3af;}
+.mc-card.mc-oos{opacity:.45;}
+.mc-card-img{width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--sf);flex-shrink:0;}
+.mc-card-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.mc-card-body{padding:9px 10px 10px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.mc-card-name{font-size:13px;font-weight:700;color:var(--tx);line-height:1.3;}
+.mc-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px;}
+.mc-card-price{font-size:14px;font-weight:700;color:var(--tx);}
+.mc-add-c{width:30px;height:30px;background:#111827;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;line-height:1;transition:opacity .15s;flex-shrink:0;}
+.mc-add-c:hover{opacity:.8;}
+.mc-stepper{display:flex;align-items:center;gap:3px;}
+.mc-qb{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--bd);background:var(--bg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--tx);font-family:inherit;transition:all .15s;}
+.mc-qb:hover{background:var(--acc);color:#fff;border-color:var(--acc);}
+.mc-qty{font-size:13px;font-weight:700;min-width:18px;text-align:center;}
 
 /* Export dropdown */
 .exp-dd{position:relative;display:inline-block;}
@@ -532,6 +557,10 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="sw">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="ms" type="text" placeholder="Search menu…" oninput="fmenu()">
+      </div>
+      <div class="vt-wrap">
+        <button class="vtb active" id="vtb-list" onclick="setMenuView('list')" title="List view"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <button class="vtb" id="vtb-card" onclick="setMenuView('card')" title="Card view"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
       </div>
     </div>
     <div class="cbar"><div id="pills" class="pills"></div></div>
@@ -942,7 +971,8 @@ const S={
   charts:{},
   cfg:JSON.parse(localStorage.getItem('cp_cfg')||'{}'),
   imgFile:null,
-  imgCurUrl:null
+  imgCurUrl:null,
+  menuView:'list'
 };
 
 const fmt=n=>`₱${parseFloat(n||0).toFixed(2)}`;
@@ -1024,31 +1054,55 @@ function applyF(){
   if(q)it=it.filter(i=>i.name.toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q));
   renderMenu(it);
 }
+function setMenuView(v){
+  S.menuView=v;
+  document.getElementById('vtb-list').classList.toggle('active',v==='list');
+  document.getElementById('vtb-card').classList.toggle('active',v==='card');
+  applyF();
+}
 function renderMenu(items){
   const g=document.getElementById('mg');
-  if(!items.length){g.innerHTML='<div class="empty">No items found</div>';return;}
-  g.innerHTML=items.map(i=>{
-    const hasInv=i.inv_qty!==null&&i.inv_qty!==undefined;
-    const oos=hasInv&&i.inv_qty<=0;
-    const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
-    const hasTypes=i.product_types&&i.product_types.length>0;
-    const priceLabel=fmt(i.price);
-    const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
-    const cartQty=cartItem?cartItem.quantity:0;
-    let rightHtml;
-    if(oos){
-      rightHtml=`<span class="ml-inv-badge ml-inv-out">Out of stock</span>`;
-    } else if(hasTypes){
-      rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;
-    } else if(cartQty>0){
-      rightHtml=`<div class="ml-stepper"><button class="ml-qb" onclick="qch('${i.id}',-1)">−</button><span class="ml-qty">${cartQty}</span><button class="ml-qb" onclick="qch('${i.id}',1)">+</button></div>`;
-    } else {
-      rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;
-    }
-    const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
-    const typePills=hasTypes?`<div class="ml-types">${i.product_types.map(t=>`<span class="ml-type-pill">${t.name} <span class="ml-type-price">${fmt(t.price)}</span></span>`).join('')}</div>`:'';
-    return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}${typePills}</div><div class="ml-right">${!hasTypes?`<span class="ml-price">${priceLabel}</span>`:''} ${rightHtml}</div></div>`;
-  }).join('');
+  if(!items.length){g.className='';g.innerHTML='<div class="empty">No items found</div>';return;}
+  if(S.menuView==='card'){
+    g.className='mc-grid';
+    const logo=getStore().logo;
+    g.innerHTML=items.map(i=>{
+      const hasInv=i.inv_qty!==null&&i.inv_qty!==undefined;
+      const oos=hasInv&&i.inv_qty<=0;
+      const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
+      const hasTypes=i.product_types&&i.product_types.length>0;
+      const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
+      const cartQty=cartItem?cartItem.quantity:0;
+      const imgSrc=safeImgSrc(i.image_url)||logo;
+      const safeLogoEsc=logo.substring(0,30).includes('data:')?'':logo.replace(/'/g,"\\'");
+      const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
+      let actionHtml;
+      if(oos){actionHtml=`<span class="ml-inv-badge ml-inv-out" style="font-size:10px;">Out of stock</span>`;}
+      else if(cartQty>0&&!hasTypes){actionHtml=`<div class="mc-stepper"><button class="mc-qb" onclick="qch('${i.id}',-1)">−</button><span class="mc-qty">${cartQty}</span><button class="mc-qb" onclick="qch('${i.id}',1)">+</button></div>`;}
+      else{actionHtml=`<button class="mc-add-c" onclick="addC('${i.id}')">+</button>`;}
+      const imgTag=safeImgSrc(i.image_url)?`<img src="${safeImgSrc(i.image_url).replace(/"/g,'%22')}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src=getStore().logo">`:`<img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+      return`<div class="mc-card${oos?' mc-oos':''}"><div class="mc-card-img">${imgTag}</div><div class="mc-card-body"><div class="mc-card-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat" style="font-size:10px;margin-top:1px;">${i.category}</span>`:''}<div class="mc-card-footer"><span class="mc-card-price">${fmt(i.price)}${hasTypes?'+':''}</span>${actionHtml}</div></div></div>`;
+    }).join('');
+  } else {
+    g.className='';
+    g.innerHTML=items.map(i=>{
+      const hasInv=i.inv_qty!==null&&i.inv_qty!==undefined;
+      const oos=hasInv&&i.inv_qty<=0;
+      const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
+      const hasTypes=i.product_types&&i.product_types.length>0;
+      const priceLabel=fmt(i.price);
+      const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
+      const cartQty=cartItem?cartItem.quantity:0;
+      let rightHtml;
+      if(oos){rightHtml=`<span class="ml-inv-badge ml-inv-out">Out of stock</span>`;}
+      else if(hasTypes){rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;}
+      else if(cartQty>0){rightHtml=`<div class="ml-stepper"><button class="ml-qb" onclick="qch('${i.id}',-1)">−</button><span class="ml-qty">${cartQty}</span><button class="ml-qb" onclick="qch('${i.id}',1)">+</button></div>`;}
+      else{rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;}
+      const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
+      const typePills=hasTypes?`<div class="ml-types">${i.product_types.map(t=>`<span class="ml-type-pill">${t.name} <span class="ml-type-price">${fmt(t.price)}</span></span>`).join('')}</div>`:'';
+      return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}${typePills}</div><div class="ml-right">${!hasTypes?`<span class="ml-price">${priceLabel}</span>`:''} ${rightHtml}</div></div>`;
+    }).join('');
+  }
 }
 
 // Cart
