@@ -659,7 +659,7 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <!-- Row 2: Top Selling + Payment Method Summary -->
     <div class="g2">
-      <div class="card"><div class="card-t">Top Selling Items</div><div class="cw"><canvas id="rp-ti"></canvas></div></div>
+      <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
       <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
     </div>
   </div>
@@ -1587,15 +1587,17 @@ async function loadReports(){
     itemMap[it.item_name]=(itemMap[it.item_name]||0)+it.quantity;
     itemRevMap[it.item_name]=(itemRevMap[it.item_name]||0)+parseFloat(it.line_total);
   }));
-  const top8=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const allItems=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
   if(S.charts.rpTI)S.charts.rpTI.destroy();
-  if(top8.length){
-    const revenues=top8.map(([n])=>itemRevMap[n]||0);
+  const wrap=document.getElementById('rp-ti-wrap');
+  wrap.style.height=Math.max(180,allItems.length*32)+'px';
+  if(allItems.length){
+    const revenues=allItems.map(([n])=>itemRevMap[n]||0);
     S.charts.rpTI=new Chart(document.getElementById('rp-ti'),{
       type:'bar',
-      data:{labels:top8.map(([n])=>n),datasets:[{label:'Qty Sold',data:top8.map(([,q])=>q),backgroundColor:'#111827',borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} sold · ${fmt(revenues[ctx.dataIndex])}`}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280'},suggestedMax:Math.max(...top8.map(([,q])=>q))*1.35},y:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#374151',maxTicksLimit:8}}}},
-      plugins:[{id:'hBarLabel',afterDatasetsDraw(chart){const{ctx}=chart;top8.forEach(([,q],i)=>{const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='700 10px Inter,sans-serif';ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(`${q}`,b.x+5,b.y);ctx.font='9px Inter,sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText(fmt(revenues[i]),b.x+5+ctx.measureText(`${q} `).width+2,b.y);ctx.restore();});}}]
+      data:{labels:allItems.map(([n])=>n),datasets:[{label:'Qty Sold',data:allItems.map(([,q])=>q),backgroundColor:'#111827',borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} sold · ${fmt(revenues[ctx.dataIndex])}`}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280'},suggestedMax:Math.max(...allItems.map(([,q])=>q))*1.35},y:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#374151'}}}},
+      plugins:[{id:'hBarLabel',afterDatasetsDraw(chart){const{ctx}=chart;allItems.forEach(([,q],i)=>{const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='700 10px Inter,sans-serif';ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(`${q}`,b.x+5,b.y);ctx.font='9px Inter,sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText(fmt(revenues[i]),b.x+5+ctx.measureText(`${q} `).width+2,b.y);ctx.restore();});}}]
     });
   }
 
