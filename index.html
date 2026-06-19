@@ -662,6 +662,8 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
       <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
     </div>
+    <!-- Row 3: Sales by Category -->
+    <div class="card" style="margin-top:13px;"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
   </div>
 </div>
 
@@ -1142,7 +1144,7 @@ function selPay(m){
   } else {
     document.getElementById('cb2').disabled=false;
   }
-  if(needsRef){document.getElementById('ref-inp').value='';setTimeout(()=>document.getElementById('ref-inp').focus(),50);}
+  if(needsRef){const d=new Date(),p=v=>String(v).padStart(2,'0');document.getElementById('ref-inp').value=`REF-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;setTimeout(()=>document.getElementById('ref-inp').focus(),50);}
 }
 function calcChange(){
   const tot=getTot().tot;
@@ -1639,6 +1641,21 @@ async function loadReports(){
   document.getElementById('rp-pm-tbl').innerHTML=`<table class="pm-tbl"><thead><tr><th>Payment Method</th><th>Transactions</th><th>Revenue</th><th style="min-width:110px;">Share</th></tr></thead><tbody>${
     pmData.map(r=>{const pct=((r.rev/totalRev)*100).toFixed(1);return`<tr><td style="font-weight:600;">${r.name}</td><td>${r.cnt}</td><td style="font-weight:700;">${fmt(r.rev)}</td><td><div class="pm-bar-wrap"><div class="pm-bar-fill" style="width:${pct}%"></div></div><div class="pm-share-lbl">${pct}%</div></td></tr>`;}).join('')
   }</tbody></table>`;
+
+  // 5. Sales by Category
+  const midCat={};(S.menu||[]).forEach(m=>{midCat[m.id]=m.category||'Uncategorized';});
+  const catMap={};
+  active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{
+    const cat=(it.menu_item_id&&midCat[it.menu_item_id])||'Other';
+    if(!catMap[cat])catMap[cat]={qty:0,rev:0};
+    catMap[cat].qty+=it.quantity;
+    catMap[cat].rev+=parseFloat(it.line_total);
+  }));
+  const catRows=Object.entries(catMap).sort((a,b)=>b[1].rev-a[1].rev);
+  const totalCatRev=catRows.reduce((s,[,v])=>s+v.rev,0)||1;
+  document.getElementById('rp-cat-tbl').innerHTML=catRows.length
+    ?`<table class="pm-tbl"><thead><tr><th>Category</th><th>Items Sold</th><th>Revenue</th><th style="min-width:110px;">Share</th></tr></thead><tbody>${catRows.map(([cat,{qty,rev}])=>{const pct=((rev/totalCatRev)*100).toFixed(1);return`<tr><td style="font-weight:600;">${cat}</td><td>${qty}</td><td style="font-weight:700;">${fmt(rev)}</td><td><div class="pm-bar-wrap"><div class="pm-bar-fill" style="width:${pct}%"></div></div><div class="pm-share-lbl">${pct}%</div></td></tr>`;}).join('')}</tbody></table>`
+    :'<div style="padding:16px 0;text-align:center;color:var(--mu);font-size:13px;">No sales data</div>';
 }
 function setRpQuick(v){
   if(!v)return;
