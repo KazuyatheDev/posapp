@@ -646,7 +646,14 @@ tbody tr.rh:hover{background:var(--sf);}
 <div id="pg-products" class="pg">
   <div class="pg-std">
     <div class="ph"><h1 class="pt">Products</h1><button class="btn btn-k" onclick="openIM()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button></div>
-    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Inv. Qty</th><th>Sizes/Types</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div></div>
+    <div class="rc"><div class="dr">
+      <div class="sw" style="flex:1;max-width:300px;"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="inv-s" type="text" placeholder="Search products…" oninput="invReset()"></div>
+      <select id="inv-cat" class="dsel" onchange="invReset()"><option value="">All Categories</option></select>
+      <select id="inv-limit" class="dsel" onchange="invReset()"><option value="20">Top 20</option><option value="all">Show All</option></select>
+    </div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Inv. Qty</th><th>Sizes/Types</th><th>In Cashier</th><th>Actions</th></tr></thead><tbody id="ib"><tr class="lr"><td colspan="7">Loading…</td></tr></tbody></table></div>
+      <div class="pg-ctrl" id="inv-pg-ctrl" style="display:none;padding:12px 0 0;"><span class="pg-info" id="inv-pg-info"></span><div class="pg-btns" id="inv-pg-btns"></div></div>
+    </div>
   </div>
 </div>
 
@@ -1253,16 +1260,44 @@ async function pushInv(txn){
 }
 
 // Products
+const INV_PER_PAGE=20;let invPage=1;
 async function loadInv(){
   document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="7">Loading…</td></tr>';
   const{data,error}=await sb.from('menu_items').select('*').order('created_at',{ascending:false});
   if(error){document.getElementById('ib').innerHTML='<tr class="lr"><td colspan="7" style="color:#ef4444;">Error</td></tr>';return;}
-  S.inv=data||[];renderInv();
+  S.inv=data||[];
+  const selCat=document.getElementById('inv-cat');const prev=selCat.value;
+  const cats=[...new Set(S.inv.map(i=>i.category).filter(Boolean))].sort();
+  selCat.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c}"${c===prev?' selected':''}>${c}</option>`).join('');
+  invPage=1;renderInv();
 }
+function invReset(){invPage=1;renderInv();}
+function invGo(p){invPage=p;renderInv();}
 function renderInv(){
   const b=document.getElementById('ib');
-  if(!S.inv.length){b.innerHTML='<tr class="lr"><td colspan="7">No products yet.</td></tr>';return;}
-  b.innerHTML=S.inv.map(item=>{
+  const q=(document.getElementById('inv-s').value||'').toLowerCase();
+  const cat=document.getElementById('inv-cat').value;
+  const limit=document.getElementById('inv-limit').value;
+  let list=S.inv;
+  if(q)list=list.filter(i=>i.name.toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q));
+  if(cat)list=list.filter(i=>i.category===cat);
+  if(!list.length){b.innerHTML='<tr class="lr"><td colspan="7">No products found.</td></tr>';document.getElementById('inv-pg-ctrl').style.display='none';return;}
+  let slice=list;
+  if(limit!=='all'){
+    const total=list.length,pages=Math.ceil(total/INV_PER_PAGE);
+    if(invPage>pages)invPage=pages;
+    slice=list.slice((invPage-1)*INV_PER_PAGE,invPage*INV_PER_PAGE);
+    const ctrl=document.getElementById('inv-pg-ctrl');
+    if(total>INV_PER_PAGE){
+      ctrl.style.display='flex';
+      document.getElementById('inv-pg-info').textContent=`${(invPage-1)*INV_PER_PAGE+1}–${Math.min(invPage*INV_PER_PAGE,total)} of ${total}`;
+      let btns=`<button class="pg-btn" ${invPage===1?'disabled':''} onclick="invGo(${invPage-1})">&#8249;</button>`;
+      for(let p=1;p<=pages;p++){if(pages<=7||p===1||p===pages||Math.abs(p-invPage)<=1){btns+=`<button class="pg-btn${p===invPage?' active':''}" onclick="invGo(${p})">${p}</button>`;}else if(Math.abs(p-invPage)===2){btns+=`<span style="padding:5px 4px;font-size:12px;color:var(--mu);">…</span>`;}}
+      btns+=`<button class="pg-btn" ${invPage===pages?'disabled':''} onclick="invGo(${invPage+1})">&#8250;</button>`;
+      document.getElementById('inv-pg-btns').innerHTML=btns;
+    } else {ctrl.style.display='none';}
+  } else {document.getElementById('inv-pg-ctrl').style.display='none';}
+  b.innerHTML=slice.map(item=>{
     const iq=item.inv_qty;
     let iqD;
     if(iq===null||iq===undefined)iqD='<span style="color:var(--mu)">N/A</span>';
