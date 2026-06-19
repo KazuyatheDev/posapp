@@ -1643,11 +1643,15 @@ async function loadReports(){
     pmData.map(r=>{const pct=((r.rev/totalRev)*100).toFixed(1);return`<tr><td style="font-weight:600;">${r.name}</td><td>${r.cnt}</td><td style="font-weight:700;">${fmt(r.rev)}</td><td><div class="pm-bar-wrap"><div class="pm-bar-fill" style="width:${pct}%"></div></div><div class="pm-share-lbl">${pct}%</div></td></tr>`;}).join('')
   }</tbody></table>`;
 
-  // 5. Sales by Category
-  const midCat={};(S.menu||[]).forEach(m=>{midCat[m.id]=m.category||'Uncategorized';});
+  // 5. Sales by Category — match by menu_item_id first, then by item name
+  const midCat={};const mnameCat={};
+  (S.menu||[]).forEach(m=>{
+    if(m.id)midCat[m.id]=m.category||'Uncategorized';
+    if(m.name)mnameCat[m.name.trim().toLowerCase()]=m.category||'Uncategorized';
+  });
   const catMap={};
   active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{
-    const cat=(it.menu_item_id&&midCat[it.menu_item_id])||'Other';
+    const cat=(it.menu_item_id&&midCat[it.menu_item_id])||(it.item_name&&mnameCat[it.item_name.trim().toLowerCase()])||'Uncategorized';
     if(!catMap[cat])catMap[cat]={qty:0,rev:0};
     catMap[cat].qty+=it.quantity;
     catMap[cat].rev+=parseFloat(it.line_total);
