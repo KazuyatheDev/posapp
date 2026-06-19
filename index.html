@@ -657,13 +657,14 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="card"><div class="card-t">Revenue by Day</div><div class="cw"><canvas id="rp-dc"></canvas></div></div>
       <div class="card"><div class="card-t">Order Status</div><div class="cw"><canvas id="rp-pm"></canvas></div></div>
     </div>
-    <!-- Row 2: Top Selling + Payment Method Summary -->
+    <!-- Row 2: Top Selling | Payment Method Summary + Sales by Category stacked -->
     <div class="g2">
       <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
-      <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
+        <div class="card"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
+      </div>
     </div>
-    <!-- Row 3: Sales by Category -->
-    <div class="card" style="margin-top:13px;"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
   </div>
 </div>
 
