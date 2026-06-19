@@ -661,7 +661,7 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <!-- Row 2: Top Selling | Payment Method Summary + Sales by Category stacked -->
     <div class="g2">
-      <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
+      <div class="card"><div class="card-t" style="display:flex;align-items:center;justify-content:space-between;">Top Selling Items<select id="rp-ti-limit" class="dsel" style="font-size:12px;padding:3px 10px;width:auto;font-weight:400;" onchange="loadReports()"><option value="10">Top 10</option><option value="20">Top 20</option><option value="all">All</option></select></div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
       <div style="display:flex;flex-direction:column;gap:13px;">
         <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
         <div class="card"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
@@ -1570,8 +1570,8 @@ async function loadReports(){
   const list=data||[];const expList=expData||[];
   // Build category lookup + populate dropdown
   const midCat={};const mnameCat={};
-  (S.menu||[]).forEach(m=>{if(m.id)midCat[m.id]=m.category||'Uncategorized';if(m.name)mnameCat[m.name.trim().toLowerCase()]=m.category||'Uncategorized';});
-  const buildCat=it=>(it.menu_item_id&&midCat[it.menu_item_id])||(it.item_name&&mnameCat[it.item_name.trim().toLowerCase()])||'Uncategorized';
+  (S.menu||[]).forEach(m=>{if(m.id)midCat[m.id]=m.category||'No Category';if(m.name)mnameCat[m.name.trim().toLowerCase()]=m.category||'No Category';});
+  const buildCat=it=>(it.menu_item_id&&midCat[it.menu_item_id])||(it.item_name&&mnameCat[it.item_name.trim().toLowerCase()])||'No Category';
   const rcat=document.getElementById('rcat');const selCat=rcat.value;
   const allCats=[...new Set((S.menu||[]).map(m=>m.category).filter(Boolean))].sort();
   rcat.innerHTML='<option value="">All Categories</option>'+allCats.map(c=>`<option value="${c}"${c===selCat?' selected':''}>${c}</option>`).join('');
@@ -1628,7 +1628,9 @@ async function loadReports(){
     itemMap[it.item_name]=(itemMap[it.item_name]||0)+it.quantity;
     itemRevMap[it.item_name]=(itemRevMap[it.item_name]||0)+parseFloat(it.line_total);
   }));
-  const allItems=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
+  const allItemsFull=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
+  const tiLimitEl=document.getElementById('rp-ti-limit');const tiLimit=tiLimitEl?tiLimitEl.value:'10';
+  const allItems=tiLimit==='all'?allItemsFull:allItemsFull.slice(0,parseInt(tiLimit,10));
   if(S.charts.rpTI)S.charts.rpTI.destroy();
   const wrap=document.getElementById('rp-ti-wrap');
   wrap.style.height=Math.max(180,allItems.length*32)+'px';
