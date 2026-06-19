@@ -190,6 +190,11 @@ tbody tr.rh:hover{background:var(--sf);}
 .eye-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--bd);background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;padding:0;flex-shrink:0;}
 .eye-btn:hover{background:var(--sf);}
 .eye-btn svg{width:14px;height:14px;stroke:#6b7280;fill:none;stroke-width:2;}
+/* Invoice item rows */
+.inv-row{display:grid;grid-template-columns:130px minmax(0,1fr) 56px 80px 64px 28px;gap:5px;align-items:center;margin-bottom:5px;}
+.inv-lt{font-size:13px;font-weight:600;text-align:right;white-space:nowrap;}
+.inv-row .fi{padding:6px 8px;font-size:13px;}
+@media(max-width:520px){.inv-row{grid-template-columns:1fr 1fr 48px 72px 52px 24px;}}
 /* Status select */
 .status-sel{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;outline:none;font-family:inherit;}
 .status-sel.bg{background:#dcfce7;color:#15803d;}
@@ -570,14 +575,17 @@ tbody tr.rh:hover{background:var(--sf);}
   <div class="pg-std">
     <div class="ph">
       <h1 class="pt">Orders</h1>
-      <div class="exp-dd" id="ord-exp-dd">
-        <button class="btn btn-o exp-dd-btn" onclick="toggleDD('ord-exp-dd')">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
-          <svg viewBox="0 0 24 24" style="width:11px;height:11px;"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="exp-dd-menu hidden" id="ord-exp-menu">
-          <button class="exp-dd-item" onclick="dlOrdersCSV();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download CSV</button>
-          <button class="exp-dd-item" onclick="dlOrdersPDF();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-k" onclick="openInvModal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Invoice</button>
+        <div class="exp-dd" id="ord-exp-dd">
+          <button class="btn btn-o exp-dd-btn" onclick="toggleDD('ord-exp-dd')">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export
+            <svg viewBox="0 0 24 24" style="width:11px;height:11px;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="exp-dd-menu hidden" id="ord-exp-menu">
+            <button class="exp-dd-item" onclick="dlOrdersCSV();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download CSV</button>
+            <button class="exp-dd-item" onclick="dlOrdersPDF();closeAllDD()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>
+          </div>
         </div>
       </div>
     </div>
@@ -595,7 +603,7 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="ord-card"><div class="ord-card-lbl">Total Refund / Void</div><div class="ord-card-val" id="ord-refvoid">₱0.00</div></div>
     </div>
     <div class="card">
-      <div class="tw"><table><thead><tr><th style="width:40px;">View Receipt</th><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Reason</th><th>Total</th><th style="width:36px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="9">Loading…</td></tr></tbody></table></div>
+      <div class="tw"><table><thead><tr><th style="width:72px;">Actions</th><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Reason</th><th>Total</th><th style="width:36px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="9">Loading…</td></tr></tbody></table></div>
       <div class="pg-ctrl" id="ord-pg-ctrl" style="display:none;padding:12px 0 0;">
         <span class="pg-info" id="ord-pg-info"></span>
         <div class="pg-btns" id="ord-pg-btns"></div>
@@ -798,6 +806,70 @@ tbody tr.rh:hover{background:var(--sf);}
   </div>
 </div>
 
+<!-- Invoice Modal -->
+<div id="invmod" class="ov">
+  <div class="modal" style="width:min(620px,calc(100vw - 32px));padding:0;display:flex;flex-direction:column;max-height:90dvh;overflow:hidden;">
+    <div class="mhd" style="padding:20px 24px 16px;border-bottom:1px solid var(--bd);margin-bottom:0;flex-shrink:0;">
+      <h2 class="mtitle" id="inv-modal-title">Add Invoice</h2>
+      <button class="mcl" onclick="closeInvModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:20px 24px;">
+      <div class="frow">
+        <div class="fg" style="margin-bottom:0;">
+          <label class="fl">Invoice #</label>
+          <input id="inv-num" type="text" class="fi" placeholder="INV-YYYYMMDD-0001">
+          <div id="inv-num-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">Invoice number already exists</div>
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label class="fl">Date &amp; Time</label>
+          <input id="inv-dt" type="datetime-local" class="fi">
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px;">
+        <label class="fl">Items</label>
+        <div style="display:grid;grid-template-columns:130px minmax(0,1fr) 56px 80px 64px 28px;gap:5px;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;">Product</span>
+          <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;">Name</span>
+          <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;">Qty</span>
+          <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;">Price</span>
+          <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;text-align:right;">Total</span>
+          <span></span>
+        </div>
+        <div id="inv-rows"></div>
+        <button type="button" class="btn btn-o" style="margin-top:8px;width:100%;font-size:13px;" onclick="addInvRow()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Item
+        </button>
+      </div>
+      <div class="frow" style="margin-top:4px;">
+        <div class="fg" style="margin-bottom:0;">
+          <label class="fl">Payment Method</label>
+          <select id="inv-pm" class="fi">
+            <option value="cash">Cash</option>
+            <option value="gcash">GCash</option>
+            <option value="bank_transfer">Bank Transfer</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label class="fl">Status</label>
+          <select id="inv-st" class="fi">
+            <option value="completed">Paid</option>
+            <option value="refunded">Refunded</option>
+            <option value="void">Void</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px;margin-bottom:0;">
+        <label class="fl">Total</label>
+        <input id="inv-total" type="text" class="fi" readonly style="font-weight:700;background:var(--sf);cursor:default;" value="&#8369;0.00">
+      </div>
+    </div>
+    <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0;">
+      <button class="btn btn-o" style="flex:1;" onclick="closeInvModal()">Cancel</button>
+      <button class="btn btn-k" style="flex:1;" id="inv-save-btn" onclick="saveInv()">Save Invoice</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Product Modal -->
 <div id="imod" class="ov">
@@ -870,7 +942,7 @@ const fmtT=iso=>new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:
 const fmtDT=iso=>new Date(iso).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})+' '+fmtT(iso);
 const fmtD=iso=>new Date(iso).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
 function toast(m,ms=3000){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),ms);}
-function invN(){const n=new Date(),p=v=>String(v).padStart(2,'0');return`INV-${n.getFullYear()}${p(n.getMonth()+1)}${p(n.getDate())}${p(n.getHours())}${p(n.getMinutes())}${p(n.getSeconds())}`;}
+async function genInvN(){const d=new Date(),p=v=>String(v).padStart(2,'0');const date=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`;const d0=today(),d1=new Date(new Date(d0).getTime()+86400000).toISOString().split('T')[0];const{data}=await sb.from('invoices').select('invoice_number').gte('created_at',d0).lt('created_at',d1).like('invoice_number',`INV-${date}-%`).order('invoice_number',{ascending:false}).limit(1);let seq=1;if(data&&data.length){const m=data[0].invoice_number.match(/INV-\d{8}-(\d+)/);if(m)seq=parseInt(m[1])+1;}return`INV-${date}-${String(seq).padStart(4,'0')}`;}
 
 const PH_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.4"><path d="M3 2v5a2 2 0 004 0V2"/><line x1="5" y1="9" x2="5" y2="22"/><path d="M21 2v20"/><path d="M21 7c-2.8 0-5 2.2-5 5v3h5"/></svg>`;
 const CART_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>`;
@@ -1082,7 +1154,7 @@ async function confPay(){
   const btn=document.getElementById('cb2');btn.textContent='Processing…';btn.disabled=true;
   const{sub,tot}=getTot();
   const ref_id=(S.pm==='gcash'||S.pm==='bank_transfer')?(document.getElementById('ref-inp').value.trim()||null):null;
-  const txn={invoice_number:invN(),subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,items:S.cart.map(i=>({menu_item_id:i.id,item_name:i.name,item_price:i.price,quantity:i.quantity,line_total:i.price*i.quantity}))};
+  const txn={invoice_number:await genInvN(),subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,items:S.cart.map(i=>({menu_item_id:i.id,item_name:i.name,item_price:i.price,quantity:i.quantity,line_total:i.price*i.quantity}))};
   if(!navigator.onLine){
     S.queue.push(txn);localStorage.setItem('cp_queue',JSON.stringify(S.queue));updBanner();
     S.cart=[];saveCart();renderCart();closePM();
@@ -1246,6 +1318,7 @@ async function delItem(id,name){
 }
 
 const EYE_SVG=`<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EDIT_SVG=`<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
 // Dashboard
 async function loadDash(){
@@ -1325,7 +1398,7 @@ function renderOrdersPage(){
     const pmLabel=i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash';
     const pmBadge=`<span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${pmLabel}</span>`;
     const reasonCell=i.status_reason?`<span style="font-size:12px;color:var(--mu);">${i.status_reason}</span>`:`<span style="color:var(--bd);">—</span>`;
-    return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td>${reasonCell}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="9"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`;
+    return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><button class="eye-btn" onclick="event.stopPropagation();openInvModal('${i.id}')" title="Edit Invoice">${EDIT_SVG}</button></div></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td>${reasonCell}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="9"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div></div></td></tr>`;
   }).join('');
   const ctrl=document.getElementById('ord-pg-ctrl');
   if(total>ORD_PER_PAGE){
@@ -1704,6 +1777,110 @@ function doLogout(){
   document.getElementById('l-err').textContent='';
   document.getElementById('login-pg').classList.remove('hidden');
   closeSB();
+}
+
+// Invoice Modal
+let _invEditId=null,_invOrigNum=null;
+
+async function openInvModal(id){
+  _invEditId=id||null;_invOrigNum=null;
+  document.getElementById('inv-num-err').style.display='none';
+  document.getElementById('inv-rows').innerHTML='';
+  const pad=v=>String(v).padStart(2,'0');
+  if(_invEditId){
+    document.getElementById('inv-modal-title').textContent='Edit Invoice';
+    const{data,error}=await sb.from('invoices').select('*,invoice_items(*)').eq('id',_invEditId).single();
+    if(error||!data){toast('Could not load invoice');return;}
+    _invOrigNum=data.invoice_number;
+    document.getElementById('inv-num').value=data.invoice_number;
+    const dt=new Date(data.created_at);
+    document.getElementById('inv-dt').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+    (data.invoice_items||[]).forEach(it=>addInvRow(it.item_name,it.quantity,it.item_price!=null?it.item_price:(it.line_total/it.quantity),it.menu_item_id));
+    document.getElementById('inv-pm').value=data.payment_method||'cash';
+    document.getElementById('inv-st').value=data.payment_status||'completed';
+  }else{
+    document.getElementById('inv-modal-title').textContent='Add Invoice';
+    const num=await genInvN();
+    document.getElementById('inv-num').value=num;
+    const now=new Date();
+    document.getElementById('inv-dt').value=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById('inv-pm').value='cash';
+    document.getElementById('inv-st').value='completed';
+    addInvRow();
+  }
+  calcInvTotal();
+  document.getElementById('invmod').classList.add('open');
+}
+
+function closeInvModal(){document.getElementById('invmod').classList.remove('open');_invEditId=null;_invOrigNum=null;}
+
+function addInvRow(name='',qty=1,price=0,menuItemId=null){
+  const rows=document.getElementById('inv-rows');
+  const opts=(S.menu||[]).map(m=>`<option value="${m.id}" data-price="${m.price}"${m.id===menuItemId?' selected':''}>${m.name}</option>`).join('');
+  const div=document.createElement('div');
+  div.className='inv-row';
+  div.innerHTML=`<select class="fi inv-psel" onchange="invSelProd(this)"><option value="">Custom</option>${opts}</select><input type="text" class="fi inv-name" placeholder="Item name" value="${String(name).replace(/"/g,'&quot;')}" oninput="calcInvTotal()"><input type="number" class="fi inv-qty" placeholder="1" value="${qty}" min="1" step="1" oninput="calcInvTotal()"><input type="number" class="fi inv-price" placeholder="0.00" value="${price}" min="0" step="0.01" oninput="calcInvTotal()"><span class="inv-lt">&#8369;0.00</span><button type="button" class="eye-btn" onclick="this.closest('.inv-row').remove();calcInvTotal()" title="Remove"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+  rows.appendChild(div);
+  calcInvTotal();
+}
+
+function invSelProd(sel){
+  const row=sel.closest('.inv-row');
+  const opt=sel.options[sel.selectedIndex];
+  if(sel.value){row.querySelector('.inv-name').value=opt.textContent;row.querySelector('.inv-price').value=opt.dataset.price||'0';}
+  calcInvTotal();
+}
+
+function calcInvTotal(){
+  let total=0;
+  document.querySelectorAll('.inv-row').forEach(row=>{
+    const qty=parseFloat(row.querySelector('.inv-qty').value)||0;
+    const price=parseFloat(row.querySelector('.inv-price').value)||0;
+    const lt=qty*price;
+    row.querySelector('.inv-lt').textContent=fmt(lt);
+    total+=lt;
+  });
+  document.getElementById('inv-total').value=fmt(total);
+}
+
+async function saveInv(){
+  const num=document.getElementById('inv-num').value.trim();
+  const dt=document.getElementById('inv-dt').value;
+  const pm=document.getElementById('inv-pm').value;
+  const st=document.getElementById('inv-st').value;
+  const errEl=document.getElementById('inv-num-err');
+  errEl.style.display='none';
+  if(!num){toast('Invoice number is required');return;}
+  if(!dt){toast('Date & Time is required');return;}
+  const rowEls=[...document.querySelectorAll('.inv-row')];
+  if(!rowEls.length){toast('Add at least one item');return;}
+  const items=rowEls.map(r=>({item_name:r.querySelector('.inv-name').value.trim(),quantity:parseInt(r.querySelector('.inv-qty').value)||1,item_price:parseFloat(r.querySelector('.inv-price').value)||0,line_total:(parseInt(r.querySelector('.inv-qty').value)||1)*(parseFloat(r.querySelector('.inv-price').value)||0),menu_item_id:r.querySelector('.inv-psel').value||null}));
+  if(items.some(it=>!it.item_name)){toast('All items need a name');return;}
+  const total=items.reduce((s,it)=>s+it.line_total,0);
+  const created_at=new Date(dt).toISOString();
+  if(!_invEditId||num!==_invOrigNum){
+    const{data:existing}=await sb.from('invoices').select('id').eq('invoice_number',num).limit(1);
+    if(existing&&existing.length&&(!_invEditId||existing[0].id!==_invEditId)){errEl.style.display='block';return;}
+  }
+  const btn=document.getElementById('inv-save-btn');btn.textContent='Saving…';btn.disabled=true;
+  try{
+    if(_invEditId){
+      const{error:e1}=await sb.from('invoices').update({invoice_number:num,created_at,payment_method:pm,payment_status:st,total_amount:total,subtotal:total,vat_amount:0}).eq('id',_invEditId);
+      if(e1)throw e1;
+      await sb.from('invoice_items').delete().eq('invoice_id',_invEditId);
+      const{error:e2}=await sb.from('invoice_items').insert(items.map(it=>({...it,invoice_id:_invEditId})));
+      if(e2)throw e2;
+      toast('Invoice updated');
+    }else{
+      const{data:inv,error:e1}=await sb.from('invoices').insert([{invoice_number:num,created_at,payment_method:pm,payment_status:st,total_amount:total,subtotal:total,vat_amount:0,synced_at:new Date().toISOString()}]).select().single();
+      if(e1)throw e1;
+      const{error:e2}=await sb.from('invoice_items').insert(items.map(it=>({...it,invoice_id:inv.id})));
+      if(e2)throw e2;
+      toast('Invoice created');
+    }
+    closeInvModal();loadOrders();
+  }catch(err){toast('Error: '+err.message);}
+  finally{btn.textContent='Save Invoice';btn.disabled=false;}
 }
 
 // Dropdown helpers
