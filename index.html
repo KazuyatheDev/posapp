@@ -555,6 +555,7 @@ tbody tr.rh:hover{background:var(--sf);}
     <div class="sg">
       <div class="sc"><div class="sl">Today's Revenue</div><div class="sv" id="mr">₱0.00</div></div>
       <div class="sc"><div class="sl">Items Sold</div><div class="sv" id="mi">0</div></div>
+      <div class="sc"><div class="sl">Total Products</div><div class="sv" id="mp">0</div></div>
     </div>
     <div class="g2">
       <div class="card"><div class="card-t">Sales Today (by Hour)</div><div class="cw"><canvas id="dc"></canvas></div></div>
@@ -645,6 +646,7 @@ tbody tr.rh:hover{background:var(--sf);}
           <option value="30">Last 30 Days</option>
           <option value="mtd">This Month</option>
         </select>
+        <select id="rcat" class="dsel" onchange="loadReports()"><option value="">All Categories</option></select>
       </div>
     </div>
     <div class="sg">
@@ -1333,6 +1335,7 @@ const EDIT_SVG=`<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 
 async function loadDash(){
   document.getElementById('dd').textContent=fmtD(new Date().toISOString());
   const d0=today(),d1=new Date(new Date(d0).getTime()+86400000).toISOString().split('T')[0];
+  sb.from('menu_items').select('*',{count:'exact',head:true}).then(({count})=>{document.getElementById('mp').textContent=count||0;});
   const{data,error}=await sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',d0).lt('created_at',d1).order('created_at',{ascending:false});
   if(error)return;
   const list=data||[];
@@ -1560,12 +1563,21 @@ async function loadReports(){
   if(!from||!to)return;
   const toN=new Date(new Date(to).getTime()+86400000).toISOString().split('T')[0];
   const[{data,error},{data:expData}]=await Promise.all([
-    sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:true}),
+    sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total,menu_item_id)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:true}),
     sb.from('expenses').select('amount').gte('expense_date',from).lte('expense_date',to)
   ]);
   if(error){toast('Error loading reports');return;}
   const list=data||[];const expList=expData||[];
-  const active=list.filter(i=>i.payment_status!=='refunded'&&i.payment_status!=='void');
+  // Build category lookup + populate dropdown
+  const midCat={};const mnameCat={};
+  (S.menu||[]).forEach(m=>{if(m.id)midCat[m.id]=m.category||'Uncategorized';if(m.name)mnameCat[m.name.trim().toLowerCase()]=m.category||'Uncategorized';});
+  const buildCat=it=>(it.menu_item_id&&midCat[it.menu_item_id])||(it.item_name&&mnameCat[it.item_name.trim().toLowerCase()])||'Uncategorized';
+  const rcat=document.getElementById('rcat');const selCat=rcat.value;
+  const allCats=[...new Set((S.menu||[]).map(m=>m.category).filter(Boolean))].sort();
+  rcat.innerHTML='<option value="">All Categories</option>'+allCats.map(c=>`<option value="${c}"${c===selCat?' selected':''}>${c}</option>`).join('');
+  // Filter invoices by selected category (item-level)
+  const filtList=selCat?list.map(inv=>{const fi=(inv.invoice_items||[]).filter(it=>buildCat(it)===selCat);if(!fi.length)return null;return{...inv,invoice_items:fi,total_amount:fi.reduce((s,it)=>s+parseFloat(it.line_total),0)};}).filter(Boolean):list;
+  const active=filtList.filter(i=>i.payment_status!=='refunded'&&i.payment_status!=='void');
   const rev=active.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const totalExp=expList.reduce((s,e)=>s+parseFloat(e.amount),0);
   const profit=rev-totalExp;
@@ -1591,9 +1603,9 @@ async function loadReports(){
   });
 
   // 2. Order Status doughnut chart
-  const stPaid=list.filter(i=>i.payment_status==='completed');
-  const stRef=list.filter(i=>i.payment_status==='refunded');
-  const stVoid=list.filter(i=>i.payment_status==='void');
+  const stPaid=filtList.filter(i=>i.payment_status==='completed');
+  const stRef=filtList.filter(i=>i.payment_status==='refunded');
+  const stVoid=filtList.filter(i=>i.payment_status==='void');
   const paidRev=stPaid.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const refRev=stRef.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const voidRev=stVoid.reduce((s,i)=>s+parseFloat(i.total_amount),0);
@@ -1643,15 +1655,10 @@ async function loadReports(){
     pmData.map(r=>{const pct=((r.rev/totalRev)*100).toFixed(1);return`<tr><td style="font-weight:600;">${r.name}</td><td>${r.cnt}</td><td style="font-weight:700;">${fmt(r.rev)}</td><td><div class="pm-bar-wrap"><div class="pm-bar-fill" style="width:${pct}%"></div></div><div class="pm-share-lbl">${pct}%</div></td></tr>`;}).join('')
   }</tbody></table>`;
 
-  // 5. Sales by Category — match by menu_item_id first, then by item name
-  const midCat={};const mnameCat={};
-  (S.menu||[]).forEach(m=>{
-    if(m.id)midCat[m.id]=m.category||'Uncategorized';
-    if(m.name)mnameCat[m.name.trim().toLowerCase()]=m.category||'Uncategorized';
-  });
+  // 5. Sales by Category
   const catMap={};
   active.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{
-    const cat=(it.menu_item_id&&midCat[it.menu_item_id])||(it.item_name&&mnameCat[it.item_name.trim().toLowerCase()])||'Uncategorized';
+    const cat=buildCat(it);
     if(!catMap[cat])catMap[cat]={qty:0,rev:0};
     catMap[cat].qty+=it.quantity;
     catMap[cat].rev+=parseFloat(it.line_total);
