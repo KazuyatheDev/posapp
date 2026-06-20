@@ -1228,15 +1228,27 @@ async function confPay(){
   const notes=document.getElementById('pay-notes').value.trim()||null;
   const amount_received=S.pm==='cash'?(parseFloat(document.getElementById('cash-recv').value)||null):null;
   const cash_change=S.pm==='cash'&&amount_received!==null?(amount_received-tot):null;
-  const txn={invoice_number:await genInvN(),subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:S.cart.map(i=>({menu_item_id:i.id,item_name:i.name,item_price:i.price,quantity:i.quantity,line_total:i.price*i.quantity}))};
+  const baseItems=S.cart.map(i=>({menu_item_id:i.id,item_name:i.name,item_price:i.price,quantity:i.quantity,line_total:i.price*i.quantity}));
   if(!navigator.onLine){
-    S.queue.push(txn);localStorage.setItem('cp_queue',JSON.stringify(S.queue));updBanner();
+    const invoice_number=await genInvN();
+    S.queue.push({invoice_number,subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:baseItems});
+    localStorage.setItem('cp_queue',JSON.stringify(S.queue));updBanner();
     S.cart=[];saveCart();renderCart();closePM();
     toast('Saved offline — will sync when connected');
     btn.textContent='Confirm Payment';return;
   }
   try{
-    const inv=await pushInv(txn);
+    let inv;
+    for(let attempt=0;attempt<5;attempt++){
+      const invoice_number=await genInvN();
+      try{
+        inv=await pushInv({invoice_number,subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:baseItems});
+        break;
+      }catch(e){
+        if((e.code==='23505'||(e.message&&e.message.includes('invoice_number')))&&attempt<4)continue;
+        throw e;
+      }
+    }
     S.cart=[];saveCart();renderCart();closePM();
     toast('Payment successful!');
     viewRcp(inv.id);
