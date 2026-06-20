@@ -988,7 +988,7 @@ const fmtT=iso=>new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:
 const fmtDT=iso=>new Date(iso).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})+' '+fmtT(iso);
 const fmtD=iso=>new Date(iso).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
 function toast(m,ms=3000){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),ms);}
-async function genInvN(){const d=new Date(),p=v=>String(v).padStart(2,'0');const date=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`;const d0=today(),d1=new Date(new Date(d0).getTime()+86400000).toISOString().split('T')[0];const{data}=await sb.from('invoices').select('invoice_number').gte('created_at',d0).lt('created_at',d1).like('invoice_number',`INV-${date}-%`).order('invoice_number',{ascending:false}).limit(1);let seq=1;if(data&&data.length){const m=data[0].invoice_number.match(/INV-\d{8}-(\d+)/);if(m)seq=parseInt(m[1])+1;}return`INV-${date}-${String(seq).padStart(4,'0')}`;}
+function genInvN(){const d=new Date(),p=v=>String(v).padStart(2,'0'),ms=String(d.getMilliseconds()).padStart(3,'0');return`INV-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}-${ms}`;}
 
 const PH_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.4"><path d="M3 2v5a2 2 0 004 0V2"/><line x1="5" y1="9" x2="5" y2="22"/><path d="M21 2v20"/><path d="M21 7c-2.8 0-5 2.2-5 5v3h5"/></svg>`;
 const CART_SVG=`<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>`;
@@ -1230,7 +1230,7 @@ async function confPay(){
   const cash_change=S.pm==='cash'&&amount_received!==null?(amount_received-tot):null;
   const baseItems=S.cart.map(i=>({menu_item_id:i.id,item_name:i.name,item_price:i.price,quantity:i.quantity,line_total:i.price*i.quantity}));
   if(!navigator.onLine){
-    const invoice_number=await genInvN();
+    const invoice_number=genInvN();
     S.queue.push({invoice_number,subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:baseItems});
     localStorage.setItem('cp_queue',JSON.stringify(S.queue));updBanner();
     S.cart=[];saveCart();renderCart();closePM();
@@ -1238,17 +1238,7 @@ async function confPay(){
     btn.textContent='Confirm Payment';return;
   }
   try{
-    let inv;
-    for(let attempt=0;attempt<5;attempt++){
-      const invoice_number=await genInvN();
-      try{
-        inv=await pushInv({invoice_number,subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:baseItems});
-        break;
-      }catch(e){
-        if((e.code==='23505'||(e.message&&e.message.includes('invoice_number')))&&attempt<4)continue;
-        throw e;
-      }
-    }
+    const inv=await pushInv({invoice_number:genInvN(),subtotal:sub,vat_amount:0,total_amount:tot,payment_method:S.pm,payment_status:'completed',ref_id,notes,amount_received,cash_change,items:baseItems});
     S.cart=[];saveCart();renderCart();closePM();
     toast('Payment successful!');
     viewRcp(inv.id);
@@ -1967,7 +1957,7 @@ async function openInvModal(id){
     document.getElementById('inv-st').value=data.payment_status||'completed';
   }else{
     document.getElementById('inv-modal-title').textContent='Add Invoice';
-    const num=await genInvN();
+    const num=genInvN();
     document.getElementById('inv-num').value=num;
     const now=new Date();
     document.getElementById('inv-dt').value=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
