@@ -34,11 +34,9 @@ svg{display:block;}
 #sb.coll .s-hd{padding:12px 0;}
 .s-brand{display:flex;flex-direction:column;align-items:center;gap:5px;overflow:hidden;min-width:0;width:100%;}
 #sb.coll .s-brand{width:auto;}
-.s-store-logo{width:56px;height:56px;border-radius:14px;object-fit:cover;flex-shrink:0;border:none;box-shadow:0 2px 12px rgba(0,0,0,.18);}
+.s-store-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:none;box-shadow:0 2px 10px rgba(0,0,0,.18);}
 .s-store-name{font-size:17px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center;line-height:1.2;}
 #sb.coll .s-store-name{display:none;}
-.s-powered{font-size:11px;color:#9ca3af;font-style:italic;white-space:nowrap;text-align:center;}
-#sb.coll .s-powered{display:none;}
 .sb-close{display:none;position:absolute;top:10px;right:10px;width:30px;height:30px;border:none;background:none;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;padding:0;color:var(--mu);}
 .sb-close svg{width:18px;height:18px;stroke:#6b7280;fill:none;stroke-width:2;}
 .s-nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden;}
@@ -449,7 +447,6 @@ tbody tr.rh:hover{background:var(--sf);}
   #sb.mob-open{left:0;}
   #sb.coll{width:var(--sb)!important;}
   #sb.coll .s-store-name{display:block;}
-  #sb.coll .s-powered{display:block;}
   #sb.coll .s-brand{align-items:center;width:100%;}
   #sb.coll .s-hd{padding:20px 16px 16px;justify-content:center;align-items:center;}
   #sb.coll .ni{justify-content:flex-start;padding:10px 12px;}
@@ -512,7 +509,6 @@ tbody tr.rh:hover{background:var(--sf);}
     <div class="s-brand">
       <img id="sb-logo" class="s-store-logo" src="" alt="Store Logo">
       <span class="s-store-name" id="sb-store-name">Hunteroos Foodhouse</span>
-      <span class="s-powered">powered by PoS 4 All</span>
     </div>
     <button class="sb-close" onclick="closeSB()" aria-label="Close menu"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
@@ -598,7 +594,8 @@ tbody tr.rh:hover{background:var(--sf);}
     <div class="ph"><h1 class="pt">Dashboard</h1><span id="dd" style="font-size:13px;color:var(--mu);"></span></div>
     <div class="sg">
       <div class="sc"><div class="sl">Today's Revenue</div><div class="sv" id="mr">₱0.00</div></div>
-      <div class="sc"><div class="sl">Items Sold</div><div class="sv" id="mi">0</div></div>
+      <div class="sc"><div class="sl">Total Items Sold Today</div><div class="sv" id="mi">0</div></div>
+      <div class="sc"><div class="sl">Total Txn Today</div><div class="sv" id="mt">0</div></div>
       <div class="sc"><div class="sl">Total Products</div><div class="sv" id="mp">0</div></div>
     </div>
     <div class="g2">
@@ -705,6 +702,8 @@ tbody tr.rh:hover{background:var(--sf);}
       <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="rp-exp">&#8369;0.00</div></div>
       <div class="sc"><div class="sl">Profit / Loss</div><div class="sv" id="rp-pl">&#8369;0.00</div><div class="sl" id="rp-pl-pct" style="font-size:12px;margin-top:2px;"></div></div>
     </div>
+    <!-- Transactions This Week -->
+    <div class="card"><div class="card-t">Transactions This Week</div><div class="cw"><canvas id="rp-tw"></canvas></div></div>
     <!-- Row 1: Revenue by Day + Order Status chart -->
     <div class="g2">
       <div class="card"><div class="card-t">Revenue by Day</div><div class="cw"><canvas id="rp-dc"></canvas></div></div>
@@ -1488,6 +1487,7 @@ async function loadDash(){
   const ic=active.reduce((s,i)=>s+(i.invoice_items||[]).reduce((a,it)=>a+it.quantity,0),0);
   document.getElementById('mr').textContent=fmt(rev);
   document.getElementById('mi').textContent=ic;
+  document.getElementById('mt').textContent=active.length;
   const hrs=Array(24).fill(0);
   active.forEach(i=>{hrs[new Date(i.created_at).getHours()]+=parseFloat(i.total_amount);});
   if(S.charts.d)S.charts.d.destroy();
@@ -1723,6 +1723,19 @@ async function loadReports(){
   document.getElementById('rp-exp').textContent=fmt(totalExp);
   const plEl=document.getElementById('rp-pl');plEl.textContent=fmt(Math.abs(profit));plEl.style.color=profit>=0?'#16a34a':'#ef4444';
   const plPct=document.getElementById('rp-pl-pct');plPct.textContent=rev>0?`${profit>=0?'+':'-'}${Math.abs((profit/rev)*100).toFixed(1)}%`:'';plPct.style.color=profit>=0?'#16a34a':'#ef4444';
+
+  // 0. Transactions This Week — line chart, last 7 days, count of invoices per day
+  const twDays=[],twLabels=[],twCounts=[];
+  for(let i=6;i>=0;i--){const d=new Date(new Date().getTime()-i*86400000);twDays.push(d.toISOString().split('T')[0]);twLabels.push(d.toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric'}));}
+  const twMap={};filtList.forEach(inv=>{const d=inv.created_at.split('T')[0];if(twDays.includes(d))twMap[d]=(twMap[d]||0)+1;});
+  twDays.forEach(d=>twCounts.push(twMap[d]||0));
+  if(S.charts.rpTW)S.charts.rpTW.destroy();
+  S.charts.rpTW=new Chart(document.getElementById('rp-tw'),{
+    type:'line',
+    data:{labels:twLabels,datasets:[{label:'Transactions',data:twCounts,borderColor:'#111827',backgroundColor:'rgba(17,24,39,.06)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#111827',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} transaction${ctx.raw!==1?'s':''}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#6b7280'}},y:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',stepSize:1,precision:0},beginAtZero:true,suggestedMax:Math.max(...twCounts,3)+1}}},
+    plugins:[{id:'twPointLabel',afterDatasetsDraw(chart){const{ctx}=chart;twCounts.forEach((v,i)=>{const pt=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='700 11px Inter,sans-serif';ctx.fillStyle='#111827';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v,pt.x,pt.y-10);ctx.restore();});}}]
+  });
 
   // 1. Revenue by Day — black bars, ₱ labels on top, skip zero days
   const dayMap={};
