@@ -195,8 +195,8 @@ tbody tr.rh:hover{background:var(--sf);}
 .inv-lt{font-size:13px;font-weight:600;text-align:right;white-space:nowrap;}
 .inv-row .fi{padding:6px 8px;font-size:13px;}
 @media(max-width:520px){.inv-row{grid-template-columns:1fr 1fr 48px 72px 52px 24px;}}
-/* Status select */
-.status-sel{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:pointer;outline:none;font-family:inherit;}
+/* Status badge */
+.status-sel{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;border:none;cursor:default;outline:none;font-family:inherit;display:inline-block;}
 .status-sel.bg{background:#dcfce7;color:#15803d;}
 .status-sel.bor{background:#fff7ed;color:#c2410c;}
 .status-sel.bvd{background:#fee2e2;color:#b91c1c;}
@@ -697,7 +697,7 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <!-- Row 2: Top Selling | Payment Method Summary + Sales by Category stacked -->
     <div class="g2">
-      <div class="card"><div class="card-t" style="display:flex;align-items:center;justify-content:space-between;">Top Selling Items<select id="rp-ti-limit" class="dsel" style="font-size:12px;padding:3px 10px;width:auto;font-weight:400;" onchange="loadReports()"><option value="10">Top 10</option><option value="20">Top 20</option><option value="all">All</option></select></div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
+      <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
       <div style="display:flex;flex-direction:column;gap:13px;">
         <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
         <div class="card"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
@@ -1450,19 +1450,8 @@ async function loadDash(){
 function statusSel(id,status){
   const v=status||'completed';
   const cls=v==='refunded'?'bor':v==='void'?'bvd':'bg';
-  return`<select class="status-sel ${cls}" data-id="${id}" onchange="changeStatus(this)" onclick="event.stopPropagation()"><option value="completed"${v==='completed'?' selected':''}>Paid</option><option value="refunded"${v==='refunded'?' selected':''}>Refunded</option><option value="void"${v==='void'?' selected':''}>Void</option></select>`;
-}
-async function changeStatus(sel){
-  const id=sel.dataset.id,val=sel.value;
   const lm={completed:'Paid',refunded:'Refunded',void:'Void'};
-  if(!confirm(`Set order status to "${lm[val]}"?`)){loadOrders();return;}
-  const upd={payment_status:val};
-  if(val==='refunded'||val==='void'){const rsn=prompt(`Reason for ${lm[val]} (optional):`);if(rsn!==null)upd.status_reason=rsn.trim()||null;}
-  const{error}=await sb.from('invoices').update(upd).eq('id',id);
-  if(error){toast(`Error: ${error.message}`);loadOrders();return;}
-  sel.className=`status-sel ${val==='refunded'?'bor':val==='void'?'bvd':'bg'}`;
-  toast(`Status updated to ${lm[val]}`);
-  loadOrders();
+  return`<span class="status-sel ${cls}">${lm[v]||v}</span>`;
 }
 
 // Orders
@@ -1502,7 +1491,7 @@ function renderOrdersPage(){
     const idx=offset+j;
     const pmLabel=i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash';
     const pmBadge=`<span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${pmLabel}</span>`;
-    return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><button class="eye-btn" onclick="event.stopPropagation();openInvModal('${i.id}')" title="Edit Invoice">${EDIT_SVG}</button></div></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td onclick="event.stopPropagation()">${statusSel(i.id,i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="8"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}${i.notes?`<div class="exp-item" style="margin-top:4px;font-size:12px;color:var(--mu);"><span>Notes</span><span>${i.notes}</span></div>`:''}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div>${i.amount_received!=null?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Amount Received</span><span>${fmt(i.amount_received)}</span></div><div class="exp-item" style="font-size:12px;font-weight:700;color:var(--tx);"><span>Change</span><span>${fmt(i.cash_change??0)}</span></div>`:''}${i.ref_id?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Ref. ID</span><span>${i.ref_id}</span></div>`:''}</div></td></tr>`;
+    return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><button class="eye-btn" onclick="event.stopPropagation();openInvModal('${i.id}')" title="Edit Invoice">${EDIT_SVG}</button></div></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td>${statusSel(i.id,i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="8"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}${i.notes?`<div class="exp-item" style="margin-top:4px;font-size:12px;color:var(--mu);"><span>Notes</span><span>${i.notes}</span></div>`:''}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div>${i.amount_received!=null?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Amount Received</span><span>${fmt(i.amount_received)}</span></div><div class="exp-item" style="font-size:12px;font-weight:700;color:var(--tx);"><span>Change</span><span>${fmt(i.cash_change??0)}</span></div>`:''}${i.ref_id?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Ref. ID</span><span>${i.ref_id}</span></div>`:''}</div></td></tr>`;
   }).join('');
   const ctrl=document.getElementById('ord-pg-ctrl');
   if(total>ORD_PER_PAGE){
@@ -1727,8 +1716,7 @@ async function loadReports(){
     itemRevMap[it.item_name]=(itemRevMap[it.item_name]||0)+parseFloat(it.line_total);
   }));
   const allItemsFull=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
-  const tiLimitEl=document.getElementById('rp-ti-limit');const tiLimit=tiLimitEl?tiLimitEl.value:'10';
-  const allItems=tiLimit==='all'?allItemsFull:allItemsFull.slice(0,parseInt(tiLimit,10));
+  const allItems=allItemsFull;
   if(S.charts.rpTI)S.charts.rpTI.destroy();
   const wrap=document.getElementById('rp-ti-wrap');
   wrap.style.height=Math.max(180,allItems.length*32)+'px';
