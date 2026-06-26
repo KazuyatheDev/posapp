@@ -285,8 +285,8 @@ tbody tr.rh:hover{background:var(--sf);}
 /* Receipt */
 .rh2{text-align:center;padding-bottom:11px;border-bottom:1px dashed var(--bd);margin-bottom:11px;}
 .rl{font-size:18px;font-weight:700;font-family:'Playfair Display',Georgia,serif;}
-.rrow{display:flex;justify-content:space-between;padding:3px 0;font-size:13px;}
-.rrow.bold{font-size:15px;font-weight:700;}
+.rrow{display:flex;justify-content:space-between;padding:4px 0;font-size:15px;}
+.rrow.bold{font-size:17px;font-weight:700;}
 .rdiv{border:none;border-top:1px dashed var(--bd);margin:8px 0;}
 
 /* Expand rows */
@@ -712,7 +712,7 @@ tbody tr.rh:hover{background:var(--sf);}
     </div>
     <!-- Row 2: Top Selling | Payment Method Summary + Sales by Category stacked -->
     <div class="g2">
-      <div class="card"><div class="card-t">Top Selling Items</div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
+      <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><div class="card-t" style="margin-bottom:0;">Top Selling Items</div><select id="rp-ti-limit" class="dsel" style="font-size:12px;padding:4px 8px;height:auto;" onchange="applyTopItemsLimit()"><option value="20">Top 20</option><option value="all">Show All</option></select></div><div id="rp-ti-wrap" style="position:relative;min-height:180px;"><canvas id="rp-ti"></canvas></div></div>
       <div style="display:flex;flex-direction:column;gap:13px;">
         <div class="card"><div class="card-t">Payment Method Summary</div><div id="rp-pm-tbl"></div></div>
         <div class="card"><div class="card-t">Sales by Category</div><div id="rp-cat-tbl"></div></div>
@@ -1661,7 +1661,7 @@ function printRcp(){
   const refLineP=d.ref_id?`<div style="font-size:11px;">Ref. ID: ${d.ref_id}</div>`:'';
   const cashLinesP=d.payment_method==='cash'&&d.amount_received!=null?`<div class="row" style="margin-top:4px;"><span>Amount Received</span><span>₱${parseFloat(d.amount_received).toFixed(2)}</span></div><div class="row bold"><span>Change</span><span>₱${parseFloat(d.cash_change??0).toFixed(2)}</span></div>`:'';
   const notesLineP=d.notes?`<div style="margin-top:6px;font-size:11px;">Notes: ${d.notes}</div>`:'';
-  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:12px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:15px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:2px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:14px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center">${logoTag}<h2>${stp.name}</h2><div>${stp.address}</div><div>${stp.phone}</div><div>TIN: N/A | NON-VAT</div><div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div>${cashLinesP}<div style="margin-top:8px;font-size:11px;">Payment: ${pmLblP}</div>${refLineP}${notesLineP}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:14px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:16px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:3px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:16px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center">${logoTag}<h2>${stp.name}</h2><div>${stp.address}</div><div>${stp.phone}</div><div>TIN: N/A | NON-VAT</div><div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div>${cashLinesP}<div style="margin-top:8px;font-size:11px;">Payment: ${pmLblP}</div>${refLineP}${notesLineP}</body></html>`);
   w.document.close();
   setTimeout(()=>w.print(),400);
 }
@@ -1780,20 +1780,9 @@ async function loadReports(){
     itemMap[it.item_name]=(itemMap[it.item_name]||0)+it.quantity;
     itemRevMap[it.item_name]=(itemRevMap[it.item_name]||0)+parseFloat(it.line_total);
   }));
-  const allItemsFull=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
-  const allItems=allItemsFull;
-  if(S.charts.rpTI)S.charts.rpTI.destroy();
-  const wrap=document.getElementById('rp-ti-wrap');
-  wrap.style.height=Math.max(180,allItems.length*32)+'px';
-  if(allItems.length){
-    const revenues=allItems.map(([n])=>itemRevMap[n]||0);
-    S.charts.rpTI=new Chart(document.getElementById('rp-ti'),{
-      type:'bar',
-      data:{labels:allItems.map(([n])=>n),datasets:[{label:'Qty Sold',data:allItems.map(([,q])=>q),backgroundColor:'#111827',borderRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} sold · ${fmt(revenues[ctx.dataIndex])}`}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280'},suggestedMax:Math.max(...allItems.map(([,q])=>q))*1.35},y:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#374151'}}}},
-      plugins:[{id:'hBarLabel',afterDatasetsDraw(chart){const{ctx}=chart;allItems.forEach(([,q],i)=>{const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='700 10px Inter,sans-serif';ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(`${q}`,b.x+5,b.y);ctx.font='9px Inter,sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText(fmt(revenues[i]),b.x+5+ctx.measureText(`${q} `).width+2,b.y);ctx.restore();});}}]
-    });
-  }
+  S._allItemsFull=Object.entries(itemMap).sort((a,b)=>b[1]-a[1]);
+  S._itemRevMap=itemRevMap;
+  renderTopItemsChart();
 
   // 4. Payment Method Summary table
   const pmKeys=['gcash','cash','bank_transfer'];
@@ -1822,6 +1811,26 @@ async function loadReports(){
     ?`<table class="pm-tbl"><thead><tr><th>Category</th><th>Items Sold</th><th>Revenue</th><th style="min-width:110px;">Share</th></tr></thead><tbody>${catRows.map(([cat,{qty,rev}])=>{const pct=((rev/totalCatRev)*100).toFixed(1);return`<tr><td style="font-weight:600;">${cat}</td><td>${qty}</td><td style="font-weight:700;">${fmt(rev)}</td><td><div class="pm-bar-wrap"><div class="pm-bar-fill" style="width:${pct}%"></div></div><div class="pm-share-lbl">${pct}%</div></td></tr>`;}).join('')}</tbody></table>`
     :'<div style="padding:16px 0;text-align:center;color:var(--mu);font-size:13px;">No sales data</div>';
 }
+function renderTopItemsChart(){
+  const limitEl=document.getElementById('rp-ti-limit');
+  const limitVal=limitEl?limitEl.value:'20';
+  const allItemsFull=S._allItemsFull||[];
+  const itemRevMap=S._itemRevMap||{};
+  const allItems=limitVal==='all'?allItemsFull:allItemsFull.slice(0,20);
+  if(S.charts.rpTI)S.charts.rpTI.destroy();
+  const wrap=document.getElementById('rp-ti-wrap');
+  wrap.style.height=Math.max(180,allItems.length*32)+'px';
+  if(allItems.length){
+    const revenues=allItems.map(([n])=>itemRevMap[n]||0);
+    S.charts.rpTI=new Chart(document.getElementById('rp-ti'),{
+      type:'bar',
+      data:{labels:allItems.map(([n])=>n),datasets:[{label:'Qty Sold',data:allItems.map(([,q])=>q),backgroundColor:'#111827',borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw} sold · ${fmt(revenues[ctx.dataIndex])}`}}},scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280'},suggestedMax:Math.max(...allItems.map(([,q])=>q))*1.35},y:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#374151'}}}},
+      plugins:[{id:'hBarLabel',afterDatasetsDraw(chart){const{ctx}=chart;allItems.forEach(([,q],i)=>{const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='700 10px Inter,sans-serif';ctx.fillStyle='#111827';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(`${q}`,b.x+5,b.y);ctx.font='9px Inter,sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText(fmt(revenues[i]),b.x+5+ctx.measureText(`${q} `).width+2,b.y);ctx.restore();});}}]
+    });
+  }
+}
+function applyTopItemsLimit(){renderTopItemsChart();}
 function setRpQuick(v){
   if(!v)return;
   const now=today();let from=now;
