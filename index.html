@@ -1979,23 +1979,36 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSB();closeTP()
 
 // Auth
 const AUTH_KEY='pos4all_auth';
+const IDLE_KEY='pos4all_idle';
+const IDLE_MS=24*60*60*1000;
+function _touchIdle(){if(localStorage.getItem(AUTH_KEY)==='1')localStorage.setItem(IDLE_KEY,Date.now());}
+function _checkIdle(){
+  if(localStorage.getItem(AUTH_KEY)!=='1')return;
+  const last=parseInt(localStorage.getItem(IDLE_KEY)||'0',10);
+  if(!last||Date.now()-last>IDLE_MS){doLogout(true);}
+}
+['click','mousemove','keydown','touchstart','scroll'].forEach(ev=>document.addEventListener(ev,_touchIdle,{passive:true}));
+setInterval(_checkIdle,60000);
 function doLogin(){
   const u=document.getElementById('l-user').value.trim();
   const p=document.getElementById('l-pass').value;
   if(u==='Admin'&&p==='admin123'){
-    sessionStorage.setItem(AUTH_KEY,'1');
+    localStorage.setItem(AUTH_KEY,'1');
+    _touchIdle();
     document.getElementById('login-pg').classList.add('hidden');
     boot();
   } else {
     document.getElementById('l-err').textContent='Invalid username or password';
   }
 }
-function doLogout(){
-  sessionStorage.removeItem(AUTH_KEY);
+function doLogout(idle){
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(IDLE_KEY);
   document.getElementById('l-user').value='';
   document.getElementById('l-pass').value='';
   document.getElementById('l-err').textContent='';
   document.getElementById('login-pg').classList.remove('hidden');
+  if(idle)toast('Session expired — no activity for 24 hours',5000);
   closeSB();
 }
 
@@ -2122,9 +2135,12 @@ function boot(){
   setupConn();loadMenu();renderCart();loadDash();updateSidebarBranding();
 }
 
-if(sessionStorage.getItem(AUTH_KEY)==='1'){
-  document.getElementById('login-pg').classList.add('hidden');
-  boot();
+if(localStorage.getItem(AUTH_KEY)==='1'){
+  _checkIdle();
+  if(localStorage.getItem(AUTH_KEY)==='1'){
+    document.getElementById('login-pg').classList.add('hidden');
+    boot();
+  }
 }
 </script>
 </body>
