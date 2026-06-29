@@ -613,7 +613,7 @@ tbody tr.rh:hover{background:var(--sf);}
   <div class="pg-std">
     <div class="ph"><h1 class="pt">Dashboard</h1><span id="dd" style="font-size:13px;color:var(--mu);"></span></div>
     <div class="sg">
-      <div class="sc"><div class="sl">Today's Revenue</div><div class="sv" id="mr">₱0.00</div></div>
+      <div class="sc"><div class="sl">Today's Revenue</div><div class="sv" id="mr">₱0</div></div>
       <div class="sc"><div class="sl">Total Items Sold Today</div><div class="sv" id="mi">0</div></div>
       <div class="sc"><div class="sl">Total Transactions Today</div><div class="sv" id="mt">0</div></div>
       <div class="sc"><div class="sl">Total Products</div><div class="sv" id="mp">0</div></div>
@@ -660,9 +660,8 @@ tbody tr.rh:hover{background:var(--sf);}
       </div>
     </div>
     <div class="ord-cards" style="grid-template-columns:repeat(2,1fr);">
-      <div class="ord-card"><div class="ord-card-lbl">Total Transactions</div><div class="ord-card-val" id="ord-txn-cnt">0</div></div>
-      <div class="ord-card"><div class="ord-card-lbl">Total Amount Paid</div><div class="ord-card-val" id="ord-paid">₱0.00</div></div>
-      <div class="ord-card"><div class="ord-card-lbl">Total Refund / Void</div><div class="ord-card-val" id="ord-refvoid">₱0.00</div></div>
+      <div class="ord-card"><div class="ord-card-lbl">Total Amount Paid</div><div class="ord-card-val" id="ord-paid">₱0</div></div>
+      <div class="ord-card"><div class="ord-card-lbl">Total Refund / Void</div><div class="ord-card-val" id="ord-refvoid">₱0</div></div>
     </div>
     <div class="card">
       <div class="tw"><table><thead><tr><th style="width:72px;">Actions</th><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Total</th><th style="width:36px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="8">Loading…</td></tr></tbody></table></div>
@@ -720,9 +719,10 @@ tbody tr.rh:hover{background:var(--sf);}
       </div>
     </div>
     <div class="sg">
-      <div class="sc"><div class="sl">Total Revenue</div><div class="sv" id="rp-rev">₱0.00</div></div>
-      <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="rp-exp">&#8369;0.00</div></div>
-      <div class="sc"><div class="sl">Profit / Loss</div><div class="sv" id="rp-pl">&#8369;0.00</div><div class="sl" id="rp-pl-pct" style="font-size:12px;margin-top:2px;"></div></div>
+      <div class="sc"><div class="sl">Total Revenue</div><div class="sv" id="rp-rev">₱0</div></div>
+      <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="rp-exp">₱0</div></div>
+      <div class="sc"><div class="sl">Profit / Loss</div><div class="sv" id="rp-pl">₱0</div><div class="sl" id="rp-pl-pct" style="font-size:12px;margin-top:2px;"></div></div>
+      <div class="sc"><div class="sl">Total Transactions</div><div class="sv" id="rp-txn">0</div></div>
     </div>
     <!-- Transactions This Week -->
     <div class="card"><div class="card-t">Transaction Summary</div><div class="cw"><canvas id="rp-tw"></canvas></div></div>
@@ -765,7 +765,7 @@ tbody tr.rh:hover{background:var(--sf);}
       </select>
     </div></div>
     <div class="sg">
-      <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="exp-tot">&#8369;0.00</div></div>
+      <div class="sc"><div class="sl">Total Expenses</div><div class="sv" id="exp-tot">₱0</div></div>
       <div class="sc"><div class="sl">Count</div><div class="sv" id="exp-cnt">0</div></div>
     </div>
     <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th style="width:110px;"></th></tr></thead><tbody id="exp-body"><tr class="lr"><td colspan="5">Loading&#8230;</td></tr></tbody></table></div></div>
@@ -1546,7 +1546,6 @@ async function loadOrders(){
   S.orders=data||[];
   const paid=S.orders.filter(i=>i.payment_status==='completed').reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const rv=S.orders.filter(i=>i.payment_status==='refunded'||i.payment_status==='void').reduce((s,i)=>s+parseFloat(i.total_amount),0);
-  document.getElementById('ord-txn-cnt').textContent=S.orders.length;
   document.getElementById('ord-paid').textContent=fmt(paid);
   document.getElementById('ord-refvoid').textContent=fmt(rv);
   renderOrdersPage();
@@ -1757,6 +1756,7 @@ async function loadReports(){
   const profit=rev-totalExp;
   document.getElementById('rp-rev').textContent=fmt(rev);
   document.getElementById('rp-exp').textContent=fmt(totalExp);
+  document.getElementById('rp-txn').textContent=list.length;
   const plEl=document.getElementById('rp-pl');plEl.textContent=fmt(Math.abs(profit));plEl.style.color=profit>=0?'#16a34a':'#ef4444';
   const plPct=document.getElementById('rp-pl-pct');plPct.textContent=rev>0?`${profit>=0?'+':'-'}${Math.abs((profit/rev)*100).toFixed(1)}%`:'';plPct.style.color=profit>=0?'#16a34a':'#ef4444';
 
