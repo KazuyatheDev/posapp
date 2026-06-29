@@ -481,6 +481,26 @@ tbody tr.rh:hover{background:var(--sf);}
   .ml-price{font-size:16px;}
 }
 @media (max-width:480px){.sg{grid-template-columns:repeat(2,1fr);}.ord-cards{grid-template-columns:1fr;}}
+.ord-mobile-list{display:none;}
+.ord-mob-card{display:flex;align-items:flex-start;min-height:44px;border-bottom:1px solid var(--bd);padding:10px 0;cursor:pointer;}
+.ord-mob-card:last-child{border-bottom:none;}
+.ord-mob-actions{display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:flex-start;padding:2px 10px 0 0;flex-shrink:0;}
+.ord-mob-main{flex:1;min-width:0;}
+.ord-mob-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.ord-mob-inv{font-family:monospace;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+.ord-mob-bot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.ord-mob-dt{font-size:11px;color:var(--mu);}
+.ord-mob-total{font-size:13px;font-weight:700;}
+.ord-mob-exp{padding:8px 0 2px;border-top:1px solid var(--bd);margin-top:8px;}
+.ord-mob-exp-item{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);padding:2px 0;}
+.ord-empty-mob{padding:32px 0;text-align:center;font-size:13px;color:var(--mu);}
+@media(max-width:767px){
+  #pg-orders .tw{display:none;}
+  .ord-mobile-list{display:block;}
+  .ord-cards{grid-template-columns:1fr!important;}
+  .ord-card-val{font-size:18px;}
+  .sv{font-size:18px;}
+}
 </style>
 </head>
 <body>
@@ -639,13 +659,14 @@ tbody tr.rh:hover{background:var(--sf);}
         <select id="ost" class="dsel" onchange="loadOrders()"><option value="">All Statuses</option><option value="completed">Paid</option><option value="refunded">Refunded</option><option value="void">Void</option></select>
       </div>
     </div>
-    <div class="ord-cards" style="grid-template-columns:repeat(3,1fr);">
+    <div class="ord-cards" style="grid-template-columns:repeat(2,1fr);">
       <div class="ord-card"><div class="ord-card-lbl">Total Transactions</div><div class="ord-card-val" id="ord-txn-cnt">0</div></div>
       <div class="ord-card"><div class="ord-card-lbl">Total Amount Paid</div><div class="ord-card-val" id="ord-paid">₱0.00</div></div>
       <div class="ord-card"><div class="ord-card-lbl">Total Refund / Void</div><div class="ord-card-val" id="ord-refvoid">₱0.00</div></div>
     </div>
     <div class="card">
       <div class="tw"><table><thead><tr><th style="width:72px;">Actions</th><th>Invoice #</th><th>Date &amp; Time</th><th>Items</th><th>Payment</th><th>Status</th><th>Total</th><th style="width:36px;"></th></tr></thead><tbody id="ord-body"><tr class="lr"><td colspan="8">Loading…</td></tr></tbody></table></div>
+      <div id="ord-mobile-list" class="ord-mobile-list"><div class="ord-empty-mob">Loading…</div></div>
       <div class="pg-ctrl" id="ord-pg-ctrl" style="display:none;padding:12px 0 0;">
         <span class="pg-info" id="ord-pg-info"></span>
         <div class="pg-btns" id="ord-pg-btns"></div>
@@ -1032,7 +1053,8 @@ const S={
   menuView:'list'
 };
 
-const fmt=n=>`₱${parseFloat(n||0).toFixed(2)}`;
+const fmt=n=>{const v=Math.round(parseFloat(n||0));return`₱${v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}`};
+const fmtC=n=>{const s=parseFloat(n||0).toFixed(2);const[int,dec]=s.split('.');return`₱${int.replace(/\B(?=(\d{3})+(?!\d))/g,',')}.${dec}`};
 const today=()=>new Date().toISOString().split('T')[0];
 const fmtT=iso=>new Date(iso).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
 const fmtDT=iso=>new Date(iso).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})+' '+fmtT(iso);
@@ -1139,7 +1161,7 @@ function renderMenu(items){
       else if(cartQty>0&&!hasTypes){actionHtml=`<div class="mc-stepper"><button class="mc-qb" onclick="qch('${i.id}',-1)">−</button><span class="mc-qty">${cartQty}</span><button class="mc-qb" onclick="qch('${i.id}',1)">+</button></div>`;}
       else{actionHtml=`<button class="mc-add-c" onclick="addC('${i.id}')">+</button>`;}
       const imgTag=safeImgSrc(i.image_url)?`<img src="${safeImgSrc(i.image_url).replace(/"/g,'%22')}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src=getStore().logo">`:`<img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-      return`<div class="mc-card${oos?' mc-oos':''}"><div class="mc-card-img">${imgTag}</div><div class="mc-card-body"><div class="mc-card-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat" style="font-size:10px;margin-top:1px;">${i.category}</span>`:''}<div class="mc-card-footer"><span class="mc-card-price">${fmt(i.price)}${hasTypes?'+':''}</span>${actionHtml}</div></div></div>`;
+      return`<div class="mc-card${oos?' mc-oos':''}"><div class="mc-card-img">${imgTag}</div><div class="mc-card-body"><div class="mc-card-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat" style="font-size:10px;margin-top:1px;">${i.category}</span>`:''}<div class="mc-card-footer"><span class="mc-card-price">${fmtC(i.price)}${hasTypes?'+':''}</span>${actionHtml}</div></div></div>`;
     }).join('');
   } else {
     g.className='';
@@ -1148,7 +1170,7 @@ function renderMenu(items){
       const oos=hasInv&&i.inv_qty<=0;
       const low=hasInv&&i.inv_qty>0&&i.inv_qty<=5;
       const hasTypes=i.product_types&&i.product_types.length>0;
-      const priceLabel=fmt(i.price);
+      const priceLabel=fmtC(i.price);
       const cartItem=S.cart.find(c=>c.id===i.id&&!c.cartId.includes('::'));
       const cartQty=cartItem?cartItem.quantity:0;
       let rightHtml;
@@ -1157,7 +1179,7 @@ function renderMenu(items){
       else if(cartQty>0){rightHtml=`<div class="ml-stepper"><button class="ml-qb" onclick="qch('${i.id}',-1)">−</button><span class="ml-qty">${cartQty}</span><button class="ml-qb" onclick="qch('${i.id}',1)">+</button></div>`;}
       else{rightHtml=`<button class="ml-add" onclick="addC('${i.id}')">+</button>`;}
       const invBadge=low?`<span class="ml-inv-badge ml-inv-low">${i.inv_qty} left</span>`:'';
-      const typePills=hasTypes?`<div class="ml-types">${i.product_types.map(t=>`<span class="ml-type-pill">${t.name} <span class="ml-type-price">${fmt(t.price)}</span></span>`).join('')}</div>`:'';
+      const typePills=hasTypes?`<div class="ml-types">${i.product_types.map(t=>`<span class="ml-type-pill">${t.name} <span class="ml-type-price">${fmtC(t.price)}</span></span>`).join('')}</div>`:'';
       return`<div class="ml-row${oos?' ml-oos':''}"><div class="ml-left"><div class="ml-name">${i.name}${invBadge}</div>${i.category?`<span class="ml-cat">${i.category}</span>`:''}${typePills}</div><div class="ml-right">${!hasTypes?`<span class="ml-price">${priceLabel}</span>`:''} ${rightHtml}</div></div>`;
     }).join('');
   }
@@ -1181,7 +1203,7 @@ function addToCart(item,price,variant){
 }
 function openTP(item){
   document.getElementById('tp-title').textContent=item.name;
-  document.getElementById('tp-opts').innerHTML=item.product_types.map(t=>`<button class="btn btn-o" style="display:flex;justify-content:space-between;width:100%;" onclick="addCWithType('${item.id}','${t.name}',${t.price})"><span>${t.name}</span><span style="font-weight:700;">${fmt(t.price)}</span></button>`).join('');
+  document.getElementById('tp-opts').innerHTML=item.product_types.map(t=>`<button class="btn btn-o" style="display:flex;justify-content:space-between;width:100%;" onclick="addCWithType('${item.id}','${t.name}',${t.price})"><span>${t.name}</span><span style="font-weight:700;">${fmtC(t.price)}</span></button>`).join('');
   document.getElementById('tpmod').classList.add('open');
 }
 function closeTP(){document.getElementById('tpmod').classList.remove('open');}
@@ -1197,7 +1219,7 @@ function saveCart(){localStorage.setItem('cp_cart',JSON.stringify(S.cart));}
 
 function cartItemsHTML(){
   if(!S.cart.length)return`<div class="ce">${CART_SVG}<span style="font-size:14px;font-weight:500;">Cart is empty</span><span style="font-size:12px;">Tap items to add</span></div>`;
-  return S.cart.map(i=>`<div class="cit"><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmt(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.cartId}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.cartId}',1)">+</button></div><div class="cit-t">${fmt(i.price*i.quantity)}</div></div>`).join('');
+  return S.cart.map(i=>`<div class="cit"><div class="cin"><div class="cin-n">${i.name}</div><div class="cin-p">${fmtC(i.price)} each</div></div><div class="cic"><button class="qb" onclick="qch('${i.cartId}',-1)">−</button><span class="qn">${i.quantity}</span><button class="qb" onclick="qch('${i.cartId}',1)">+</button></div><div class="cit-t">${fmtC(i.price*i.quantity)}</div></div>`).join('');
 }
 
 function renderCart(){
@@ -1207,15 +1229,15 @@ function renderCart(){
   const html=cartItemsHTML();
   document.getElementById('cart-hd').textContent=`Cart (${cnt})`;
   document.getElementById('ci').innerHTML=html;
-  document.getElementById('cs').textContent=fmt(sub);
-  document.getElementById('ct2').textContent=fmt(sub);
+  document.getElementById('cs').textContent=fmtC(sub);
+  document.getElementById('ct2').textContent=fmtC(sub);
   document.getElementById('pb').disabled=empty;
   document.getElementById('mob-cnt').textContent=`${cnt} item${cnt!==1?'s':''}`;
-  document.getElementById('mob-tot').textContent=fmt(sub);
+  document.getElementById('mob-tot').textContent=fmtC(sub);
   document.getElementById('mc-hd').textContent=`Cart (${cnt})`;
   document.getElementById('mci2').innerHTML=html;
-  document.getElementById('mcs').textContent=fmt(sub);
-  document.getElementById('mct').textContent=fmt(sub);
+  document.getElementById('mcs').textContent=fmtC(sub);
+  document.getElementById('mct').textContent=fmtC(sub);
   document.getElementById('mpb').disabled=empty;
   if(S.sec==='cashier')applyF();
 }
@@ -1228,7 +1250,7 @@ function getTot(){const sub=S.cart.reduce((s,i)=>s+i.price*i.quantity,0);return{
 function openPM(){
   if(!S.cart.length)return;
   closeMC();
-  document.getElementById('pmt').textContent=fmt(getTot().tot);
+  document.getElementById('pmt').textContent=fmtC(getTot().tot);
   S.pm=null;
   ['bg','bc','bb'].forEach(id=>document.getElementById(id).classList.remove('sel'));
   document.getElementById('cb2').disabled=true;
@@ -1267,7 +1289,7 @@ function calcChange(){
   const chg=recv-tot;
   const el=document.getElementById('chg-val');
   if(!recv){el.textContent='—';el.className='chg-val';document.getElementById('cb2').disabled=true;return;}
-  el.textContent=chg>=0?fmt(chg):`-${fmt(Math.abs(chg))}`;
+  el.textContent=chg>=0?fmtC(chg):`-${fmtC(Math.abs(chg))}`;
   el.className=`chg-val ${chg>=0?'chg-ok':'chg-low'}`;
   document.getElementById('cb2').disabled=chg<0;
 }
@@ -1514,6 +1536,7 @@ async function loadOrders(){
   const from=document.getElementById('of').value,to=document.getElementById('ot2').value,pm=document.getElementById('opm').value,st=document.getElementById('ost').value;
   if(!from||!to)return;
   document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="8">Loading…</td></tr>';
+  document.getElementById('ord-mobile-list').innerHTML='<div class="ord-empty-mob">Loading…</div>';
   const toN=new Date(new Date(to).getTime()+86400000).toISOString().split('T')[0];
   let q=sb.from('invoices').select('*,invoice_items(item_name,quantity,line_total)').gte('created_at',from).lt('created_at',toN).order('created_at',{ascending:false});
   if(pm)q=q.eq('payment_method',pm);
@@ -1532,6 +1555,7 @@ function renderOrdersPage(){
   const list=S.orders;
   if(!list.length){
     document.getElementById('ord-body').innerHTML='<tr class="lr"><td colspan="8">No orders in this period</td></tr>';
+    document.getElementById('ord-mobile-list').innerHTML='<div class="ord-empty-mob">No orders in this period</div>';
     document.getElementById('ord-pg-ctrl').style.display='none';
     return;
   }
@@ -1544,6 +1568,13 @@ function renderOrdersPage(){
     const pmLabel=i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash';
     const pmBadge=`<span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${pmLabel}</span>`;
     return`<tr class="rh" style="cursor:pointer;" onclick="togRow(${idx})"><td><div style="display:flex;gap:4px;align-items:center;"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><button class="eye-btn" onclick="event.stopPropagation();openInvModal('${i.id}')" title="Edit Invoice">${EDIT_SVG}</button></div></td><td style="font-family:monospace;font-size:12px;font-weight:600;">${i.invoice_number}</td><td style="white-space:nowrap;font-size:12px;">${fmtDT(i.created_at)}</td><td>${(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)} items</td><td>${pmBadge}</td><td>${statusSel(i.id,i.payment_status)}</td><td style="font-weight:700;">${fmt(i.total_amount)}</td><td><span class="chev" id="chev-${idx}" style="font-size:12px;color:var(--mu);">&#8250;</span></td></tr><tr id="exp-${idx}" class="exp-row" style="display:none;"><td colspan="8"><div class="exp-inner">${(i.invoice_items||[]).map(it=>`<div class="exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')}${i.notes?`<div class="exp-item" style="margin-top:4px;font-size:12px;color:var(--mu);"><span>Notes</span><span>${i.notes}</span></div>`:''}<div class="exp-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div>${i.amount_received!=null?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Amount Received</span><span>${fmt(i.amount_received)}</span></div><div class="exp-item" style="font-size:12px;font-weight:700;color:var(--tx);"><span>Change</span><span>${fmt(i.cash_change??0)}</span></div>`:''}${i.ref_id?`<div class="exp-item" style="font-size:12px;color:var(--mu);"><span>Ref. ID</span><span>${i.ref_id}</span></div>`:''}</div></td></tr>`;
+  }).join('');
+  document.getElementById('ord-mobile-list').innerHTML=slice.map((i,j)=>{
+    const idx=offset+j;
+    const pmLabel=i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash';
+    const pmBadge=`<span class="bdg ${i.payment_method==='gcash'?'bg':i.payment_method==='bank_transfer'?'bbt':'bgr'}">${pmLabel}</span>`;
+    const expItems=(i.invoice_items||[]).map(it=>`<div class="ord-mob-exp-item"><span>${it.item_name} &times; ${it.quantity}</span><span style="font-weight:600;">${fmt(it.line_total)}</span></div>`).join('')+(i.notes?`<div class="ord-mob-exp-item" style="margin-top:4px;"><span>Notes</span><span>${i.notes}</span></div>`:'')+`<div class="ord-mob-exp-item" style="margin-top:4px;padding-top:4px;border-top:1px solid var(--bd);font-weight:600;color:var(--tx);"><span>Total (${pmLabel})</span><span>${fmt(i.total_amount)}</span></div>`+(i.amount_received!=null?`<div class="ord-mob-exp-item"><span>Received</span><span>${fmt(i.amount_received)}</span></div><div class="ord-mob-exp-item" style="font-weight:700;color:var(--tx);"><span>Change</span><span>${fmt(i.cash_change??0)}</span></div>`:'')+( i.ref_id?`<div class="ord-mob-exp-item"><span>Ref. ID</span><span>${i.ref_id}</span></div>`:'');
+    return`<div class="ord-mob-card" onclick="togMobCard(${idx})"><div class="ord-mob-actions"><button class="eye-btn" onclick="event.stopPropagation();viewRcp('${i.id}')" title="View Receipt">${EYE_SVG}</button><button class="eye-btn" onclick="event.stopPropagation();openInvModal('${i.id}')" title="Edit Invoice">${EDIT_SVG}</button></div><div class="ord-mob-main"><div class="ord-mob-top"><span class="ord-mob-inv">${i.invoice_number}</span>${statusSel(i.id,i.payment_status)}</div><div class="ord-mob-bot"><span class="ord-mob-dt">${fmtDT(i.created_at)}</span><span class="ord-mob-total">${fmt(i.total_amount)}</span></div><div>${pmBadge}</div><div class="ord-mob-exp" id="mob-exp-${idx}" style="display:none;">${expItems}</div></div></div>`;
   }).join('');
   const ctrl=document.getElementById('ord-pg-ctrl');
   if(total>ORD_PER_PAGE){
@@ -1565,23 +1596,27 @@ function togRow(idx){
   row.style.display=open?'table-row':'none';
   chev.style.transform=open?'rotate(90deg)':'rotate(0deg)';
 }
+function togMobCard(idx){
+  const el=document.getElementById(`mob-exp-${idx}`);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
 async function dlOrdersCSV(){
   const list=S.orders||[];
   if(!list.length){toast('No orders to export');return;}
   const paid=list.filter(i=>i.payment_status==='completed').reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const rv=list.filter(i=>i.payment_status==='refunded'||i.payment_status==='void').reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const rows=[['Invoice #','Date & Time','Items','Payment','Status','Notes','Total (PHP)']];
-  list.forEach(i=>rows.push([i.invoice_number,fmtDT(i.created_at),(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash',i.payment_status,i.notes||'',parseFloat(i.total_amount).toFixed(2)]));
+  list.forEach(i=>rows.push([i.invoice_number,fmtDT(i.created_at),(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Transfer':'Cash',i.payment_status,i.notes||'',Math.round(parseFloat(i.total_amount))]));
   rows.push([]);
   rows.push(['--- SUMMARY ---']);
-  rows.push(['Total Amount Paid',paid.toFixed(2)]);
-  rows.push(['Total Refund / Void',rv.toFixed(2)]);
+  rows.push(['Total Amount Paid',Math.round(paid)]);
+  rows.push(['Total Refund / Void',Math.round(rv)]);
   rows.push(['Total Transactions',list.length]);
   rows.push([]);
   rows.push(['--- ITEMS SOLD BREAKDOWN ---']);
   rows.push(['Product Name','Quantity Sold','Unit Price (PHP)','Total Revenue (PHP)']);
   const bkd={};list.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{if(!bkd[it.item_name])bkd[it.item_name]={qty:0,rev:0};bkd[it.item_name].qty+=it.quantity;bkd[it.item_name].rev+=parseFloat(it.line_total);}));
-  Object.entries(bkd).sort((a,b)=>b[1].qty-a[1].qty).forEach(([name,{qty,rev}])=>rows.push([name,qty,(rev/qty).toFixed(2),rev.toFixed(2)]));
+  Object.entries(bkd).sort((a,b)=>b[1].qty-a[1].qty).forEach(([name,{qty,rev}])=>rows.push([name,qty,Math.round(rev/qty),Math.round(rev)]));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);a.download=`orders-export.csv`;a.click();
   toast('CSV exported');
@@ -1604,7 +1639,7 @@ async function dlOrdersPDF(){
   list.forEach(i=>{
     if(y>185){doc.addPage();y=14;}
     x=14;
-    const row=[i.invoice_number,fmtDT(i.created_at),String((i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Xfer':'Cash',i.payment_status,i.notes||'—',`₱${parseFloat(i.total_amount).toFixed(2)}`];
+    const row=[i.invoice_number,fmtDT(i.created_at),String((i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0)),i.payment_method==='gcash'?'GCash':i.payment_method==='bank_transfer'?'Bank Xfer':'Cash',i.payment_status,i.notes||'—',fmt(i.total_amount)];
     row.forEach((v,j)=>{doc.text(String(v).substring(0,28),x,y);x+=cw[j];});
     y+=6;
   });
@@ -1613,8 +1648,8 @@ async function dlOrdersPDF(){
   doc.text('Summary',14,y);y+=6;
   doc.setFont(undefined,'normal');doc.setFontSize(9);
   doc.text(`Total Transactions: ${list.length}`,14,y);y+=5;
-  doc.text(`Total Amount Paid: ₱${paid.toFixed(2)}`,14,y);y+=5;
-  doc.text(`Total Refund / Void: ₱${rv.toFixed(2)}`,14,y);y+=8;
+  doc.text(`Total Amount Paid: ${fmt(paid)}`,14,y);y+=5;
+  doc.text(`Total Refund / Void: ${fmt(rv)}`,14,y);y+=8;
   const bkd2={};list.forEach(inv=>(inv.invoice_items||[]).forEach(it=>{if(!bkd2[it.item_name])bkd2[it.item_name]={qty:0,rev:0};bkd2[it.item_name].qty+=it.quantity;bkd2[it.item_name].rev+=parseFloat(it.line_total);}));
   const bkdRows=Object.entries(bkd2).sort((a,b)=>b[1].qty-a[1].qty);
   if(bkdRows.length){
@@ -1627,7 +1662,7 @@ async function dlOrdersPDF(){
     bkdRows.forEach(([name,{qty,rev}])=>{
       if(y>190){doc.addPage();y=14;}
       bx=14;
-      [name.substring(0,38),String(qty),`₱${(rev/qty).toFixed(2)}`,`₱${rev.toFixed(2)}`].forEach((v,j)=>{doc.text(v,bx,y);bx+=bCw[j];});
+      [name.substring(0,38),String(qty),fmt(rev/qty),fmt(rev)].forEach((v,j)=>{doc.text(v,bx,y);bx+=bCw[j];});
       y+=5;
     });
   }
@@ -1659,9 +1694,9 @@ function printRcp(){
   const w=window.open('','_blank','width=420,height=640');
   const pmLblP={gcash:'GCash',cash:'Cash',bank_transfer:'Bank Transfer'}[d.payment_method]||d.payment_method;
   const refLineP=d.ref_id?`<div style="font-size:13px;">Ref. ID: ${d.ref_id}</div>`:'';
-  const cashLinesP=d.payment_method==='cash'&&d.amount_received!=null?`<div class="row" style="margin-top:4px;"><span>Amount Received</span><span>₱${parseFloat(d.amount_received).toFixed(2)}</span></div><div class="row bold"><span>Change</span><span>₱${parseFloat(d.cash_change??0).toFixed(2)}</span></div>`:'';
+  const cashLinesP=d.payment_method==='cash'&&d.amount_received!=null?`<div class="row" style="margin-top:4px;"><span>Amount Received</span><span>${fmt(d.amount_received)}</span></div><div class="row bold"><span>Change</span><span>${fmt(d.cash_change??0)}</span></div>`:'';
   const notesLineP=d.notes?`<div style="margin-top:8px;font-size:14px;font-weight:700;border-top:1px dashed #bbb;padding-top:6px;">Notes: ${d.notes}</div>`:'';
-  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:14px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:16px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:3px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:16px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center">${logoTag}<h2>${stp.name}</h2><div>${stp.address}</div><div>${stp.phone}</div><div>TIN: N/A | NON-VAT</div><div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>₱${parseFloat(it.line_total).toFixed(2)}</span></div>`).join('')}<div class="divider"></div><div class="row bold"><span>TOTAL</span><span>₱${parseFloat(d.total_amount).toFixed(2)}</span></div>${cashLinesP}<div style="margin-top:8px;font-size:13px;">Payment: ${pmLblP}</div>${refLineP}${notesLineP}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt ${d.invoice_number}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Courier New',monospace;max-width:300px;margin:24px auto;font-size:14px;color:#111;}.center{text-align:center;margin-bottom:3px;}h2{font-size:16px;font-family:serif;font-weight:700;}.row{display:flex;justify-content:space-between;padding:3px 0;}.divider{border:none;border-top:1px dashed #bbb;margin:7px 0;}.bold{font-weight:700;font-size:16px;}@media print{@page{margin:6mm;size:80mm auto;}}</style></head><body><div class="center">${logoTag}<h2>${stp.name}</h2><div>${stp.address}</div><div>${stp.phone}</div><div>TIN: N/A | NON-VAT</div><div>${fmtD(d.created_at)} · ${fmtT(d.created_at)}</div><div><strong>${d.invoice_number}</strong></div></div><div class="divider"></div>${(d.invoice_items||[]).map(it=>`<div class="row"><span>${it.item_name} × ${it.quantity}</span><span>${fmt(it.line_total)}</span></div>`).join('')}<div class="divider"></div><div class="row bold"><span>TOTAL</span><span>${fmt(d.total_amount)}</span></div>${cashLinesP}<div style="margin-top:8px;font-size:13px;">Payment: ${pmLblP}</div>${refLineP}${notesLineP}</body></html>`);
   w.document.close();
   setTimeout(()=>w.print(),400);
 }
@@ -1683,14 +1718,14 @@ async function downloadRcpPDF(){
   doc.setFont(undefined,'bold');doc.text(d.invoice_number,cx,y,{align:'center'});y+=7;
   doc.setDrawColor(180);doc.line(lm,y,rm,y);y+=5;
   doc.setFont(undefined,'normal');doc.setFontSize(10);
-  (d.invoice_items||[]).forEach(it=>{doc.text(`${it.item_name} × ${it.quantity}`,lm,y);doc.text(`₱${parseFloat(it.line_total).toFixed(2)}`,rm,y,{align:'right'});y+=6;});
+  (d.invoice_items||[]).forEach(it=>{doc.text(`${it.item_name} × ${it.quantity}`,lm,y);doc.text(fmt(it.line_total),rm,y,{align:'right'});y+=6;});
   doc.line(lm,y,rm,y);y+=5;
   doc.line(lm,y,rm,y);y+=5;
   doc.setFont(undefined,'bold');doc.setFontSize(12);
-  doc.text('TOTAL',lm,y);doc.text(`₱${parseFloat(d.total_amount).toFixed(2)}`,rm,y,{align:'right'});y+=7;
+  doc.text('TOTAL',lm,y);doc.text(fmt(d.total_amount),rm,y,{align:'right'});y+=7;
   doc.setFont(undefined,'normal');doc.setFontSize(9);
   const pmLblD={gcash:'GCash',cash:'Cash',bank_transfer:'Bank Transfer'}[d.payment_method]||d.payment_method;
-  if(d.payment_method==='cash'&&d.amount_received!=null){doc.text('Amount Received',lm,y);doc.text(`₱${parseFloat(d.amount_received).toFixed(2)}`,rm,y,{align:'right'});y+=5;doc.setFont(undefined,'bold');doc.text('Change',lm,y);doc.text(`₱${parseFloat(d.cash_change??0).toFixed(2)}`,rm,y,{align:'right'});y+=5;doc.setFont(undefined,'normal');}
+  if(d.payment_method==='cash'&&d.amount_received!=null){doc.text('Amount Received',lm,y);doc.text(fmt(d.amount_received),rm,y,{align:'right'});y+=5;doc.setFont(undefined,'bold');doc.text('Change',lm,y);doc.text(fmt(d.cash_change??0),rm,y,{align:'right'});y+=5;doc.setFont(undefined,'normal');}
   doc.text(`Payment: ${pmLblD}`,lm,y);
   if(d.ref_id){y+=5;doc.text(`Ref. ID: ${d.ref_id}`,lm,y);}
   doc.save(`receipt-${d.invoice_number}.pdf`);
@@ -1750,7 +1785,7 @@ async function loadReports(){
   S.charts.rpD=new Chart(document.getElementById('rp-dc'),{
     type:'bar',
     data:{labels:dayLabels,datasets:[{label:'Revenue',data:dayVals,backgroundColor:'#111827',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`₱${parseFloat(ctx.raw).toFixed(2)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#6b7280',maxTicksLimit:14}},y:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',callback:v=>`₱${v>=1000?(v/1000).toFixed(0)+'k':v}`},suggestedMax:Math.max(...dayVals)*1.18||100}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},color:'#6b7280',maxTicksLimit:14}},y:{grid:{color:'#f3f4f6'},ticks:{font:{family:'Inter',size:10},color:'#6b7280',callback:v=>`₱${v>=1000?(v/1000).toFixed(0)+'k':v}`},suggestedMax:Math.max(...dayVals)*1.18||100}}},
     plugins:[{id:'barTopLabel',afterDatasetsDraw(chart){const{ctx}=chart;chart.data.datasets[0].data.forEach((v,i)=>{if(!v)return;const b=chart.getDatasetMeta(0).data[i];ctx.save();ctx.font='600 10px Inter,sans-serif';ctx.fillStyle='#374151';ctx.textAlign='center';ctx.textBaseline='bottom';const lbl=v>=1000?`₱${(v/1000).toFixed(1)}k`:`₱${v.toFixed(0)}`;ctx.fillText(lbl,b.x,b.y-3);ctx.restore();});}}]
   });
 
@@ -1928,12 +1963,12 @@ async function dlReportCSV(){
   const rev=active.reduce((s,i)=>s+parseFloat(i.total_amount),0);
   const totalExp=expList.reduce((s,e)=>s+parseFloat(e.amount),0);
   const rows=[['=== INVOICES ==='],['Invoice #','Date & Time','Items','Payment','Ref ID','Status','Total (PHP)']];
-  list.forEach(i=>rows.push([i.invoice_number,fmtDT(i.created_at),(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0),i.payment_method,i.ref_id||'',i.payment_status,parseFloat(i.total_amount).toFixed(2)]));
+  list.forEach(i=>rows.push([i.invoice_number,fmtDT(i.created_at),(i.invoice_items||[]).reduce((s,it)=>s+it.quantity,0),i.payment_method,i.ref_id||'',i.payment_status,Math.round(parseFloat(i.total_amount))]));
   rows.push([]);rows.push(['=== INVOICE ITEMS ===']);rows.push(['Invoice #','Item Name','Qty','Line Total (PHP)']);
-  list.forEach(i=>(i.invoice_items||[]).forEach(it=>rows.push([i.invoice_number,it.item_name,it.quantity,parseFloat(it.line_total).toFixed(2)])));
+  list.forEach(i=>(i.invoice_items||[]).forEach(it=>rows.push([i.invoice_number,it.item_name,it.quantity,Math.round(parseFloat(it.line_total))])));
   rows.push([]);rows.push(['=== EXPENSES ===']);rows.push(['Date','Category','Description','Amount (PHP)']);
-  expList.forEach(e=>rows.push([e.expense_date,e.category,e.description||'',parseFloat(e.amount).toFixed(2)]));
-  rows.push([]);rows.push(['=== SUMMARY ===']);rows.push(['Total Revenue (completed)',rev.toFixed(2)]);rows.push(['Total Expenses',totalExp.toFixed(2)]);rows.push(['Profit / Loss',(rev-totalExp).toFixed(2)]);
+  expList.forEach(e=>rows.push([e.expense_date,e.category,e.description||'',Math.round(parseFloat(e.amount))]));
+  rows.push([]);rows.push(['=== SUMMARY ===']);rows.push(['Total Revenue (completed)',Math.round(rev)]);rows.push(['Total Expenses',Math.round(totalExp)]);rows.push(['Profit / Loss',Math.round(rev-totalExp)]);
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`report-${from}-to-${to}.csv`;a.click();
   toast('CSV report downloaded');
